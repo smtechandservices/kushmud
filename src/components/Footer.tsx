@@ -1,0 +1,48 @@
+import React from 'react';
+import Link from 'next/link';
+
+export const Footer: React.FC = () => {
+  return (
+    <footer className="footer">
+      <div className="container">
+        <div className="footer-top">
+          <div>
+            <div className="brand">Kushmud<span className="dot" style={{background:'var(--clay)'}}></span></div>
+            <p className="footer-tag">Considered travel across India and the UAE for people who'd rather pack light and go slow. Curated since 2017.</p>
+          </div>
+          <div className="footer-col">
+            <h5>Travel</h5>
+            <Link href="/packages">Packages</Link>
+            <Link href="/destinations">Destinations</Link>
+            <Link href="/private-trips">Private trips</Link>
+            <Link href="/gift-cards">Gift cards</Link>
+          </div>
+          <div className="footer-col">
+            <h5>Company</h5>
+            <Link href="/about">Our story</Link>
+            <Link href="/journal">Field journal</Link>
+            <Link href="/press">Press</Link>
+            <Link href="/careers">Careers</Link>
+          </div>
+          <div className="footer-col">
+            <h5>Help</h5>
+            <Link href="/contact">Contact</Link>
+            <Link href="/terms">Booking terms</Link>
+            <Link href="/insurance">Insurance</Link>
+            <Link href="/faq">FAQ</Link>
+          </div>
+          <div className="footer-col">
+            <h5>Follow</h5>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://substack.com" target="_blank" rel="noopener noreferrer">Substack</a>
+            <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer">Pinterest</a>
+          </div>
+        </div>
+        <div className="footer-bot">
+          <span>© 2026 Kushmud Travel Co. — Lisbon &amp; Brooklyn</span>
+          <span>ATOL 11423 · IATA 12-3 4567</span>
+        </div>
+      </div>
+    </footer>
+  );
+};
