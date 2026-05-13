@@ -4,33 +4,7 @@ import React from 'react';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
-
-const STORIES = [
-  {
-    title: "Six Mornings in the Thar Desert",
-    excerpt: "Notes on the quality of light, the architecture of sand, and why you should always carry a second camera battery.",
-    date: "April 12, 2026",
-    author: "Liam Thorne",
-    img: "https://images.unsplash.com/photo-1546412414-e1885259563a?w=800&auto=format&fit=crop",
-    tag: "Field Notes"
-  },
-  {
-    title: "The Art of the Slow Thali",
-    excerpt: "How a family-run kitchen in Jodhpur changed our perspective on the midday meal.",
-    date: "March 28, 2026",
-    author: "Sarah Chen",
-    img: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop",
-    tag: "Culture"
-  },
-  {
-    title: "Beyond the Burj",
-    excerpt: "Discovering the quiet, historic courtyards of Old Dubai at sunrise.",
-    date: "February 14, 2026",
-    author: "Elena Rossi",
-    img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&auto=format&fit=crop",
-    tag: "City Guide"
-  }
-];
+import STORIES from '@/assets/stories.json';
 
 export default function StoriesPage() {
   return (

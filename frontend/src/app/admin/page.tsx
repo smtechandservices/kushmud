@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
 import { PACKAGES, BOOKINGS } from '@/lib/data';
+import navItems from '@/assets/admin-nav.json';
+import chartData from '@/assets/admin-chart.json';
 
 function Spark({ color = '#1f7a4d', inverse = false }) {
   const points = inverse
@@ -27,8 +29,7 @@ function Spark({ color = '#1f7a4d', inverse = false }) {
 }
 
 function BookingChart() {
-  const monthly = [42, 48, 55, 51, 64, 71, 78, 85, 73, 88, 96, 142];
-  const labels = ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'];
+  const { monthly, labels } = chartData;
   const max = 160;
   const w = 800, h = 220;
   const step = w / (monthly.length - 1);
@@ -60,20 +61,6 @@ function BookingChart() {
 }
 
 export default function AdminPage() {
-  const navItems = [
-    { sec: 'General' },
-    { ic: 'home', label: 'Dashboard', active: true, href: '/admin' },
-    { ic: 'package', label: 'Packages', count: 26, href: '/admin/packages' },
-    { ic: 'inbox', label: 'Bookings', count: 142, href: '/admin/bookings' },
-    { ic: 'users', label: 'Customers', href: '/admin/customers' },
-    { sec: 'Marketing' },
-    { ic: 'tag', label: 'Offers & promotions', count: 4, href: '/admin/offers' },
-    { ic: 'globe', label: 'Destinations', href: '/admin/destinations' },
-    { ic: 'mail', label: 'Newsletters', href: '/admin/newsletters' },
-    { sec: 'Insights' },
-    { ic: 'chart', label: 'Analytics', href: '/admin/analytics' },
-    { ic: 'settings', label: 'Settings', href: '/admin/settings' },
-  ];
 
   return (
     <div className="admin">

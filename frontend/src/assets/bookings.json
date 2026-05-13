@@ -1,0 +1,8 @@
+[
+  { "id": "WF-2841", "name": "Hannah Visser",    "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&auto=format&fit=crop", "pkg": "A Slow Pass Through Rajasthan",   "dates": "Apr 14 — Apr 22", "total": 5960, "status": "confirmed" },
+  { "id": "WF-2840", "name": "Marcus Lindqvist", "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop", "pkg": "Dubai, From Sand to Skyline",     "dates": "Mar 02 — Mar 07", "total": 6580, "status": "pending" },
+  { "id": "WF-2839", "name": "Priya Raman",      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop", "pkg": "The Kerala Backwaters, On Water", "dates": "May 11 — May 17", "total": 4280, "status": "confirmed" },
+  { "id": "WF-2838", "name": "Theo Bergmann",    "avatar": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&auto=format&fit=crop", "pkg": "High Roads of Ladakh",            "dates": "Jun 18 — Jun 27", "total": 7280, "status": "confirmed" },
+  { "id": "WF-2837", "name": "Lina Park",        "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop", "pkg": "Abu Dhabi — Mosque & Mangrove",  "dates": "Mar 22 — Mar 26", "total": 5360, "status": "cancelled" },
+  { "id": "WF-2836", "name": "Owen Brookes",     "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=120&auto=format&fit=crop", "pkg": "Goa, North to South",             "dates": "Nov 04 — Nov 09", "total": 3680, "status": "pending" }
+]

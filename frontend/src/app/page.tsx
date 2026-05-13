@@ -1,16 +1,60 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
 import { PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
+const REGIONS = ['Anywhere', 'India', 'UAE'];
+const STYLES  = ['Cultural', 'Adventure', 'Culinary', 'Wellness', 'Family', 'Luxury'];
+const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => void) {
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) cb();
+    }
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [ref, cb]);
+}
+
 export default function Home() {
+  const router   = useRouter();
   const featured = PACKAGES.slice(0, 3);
   const trending = PACKAGES.slice(1, 5);
   const [testi, setTesti] = useState(0);
+
+  /* ── searchbar state ── */
+  const [open,     setOpen]     = useState<string | null>(null);
+  const [where,    setWhere]    = useState('Anywhere');
+  const [style,    setStyle]    = useState('');
+  const [adults,   setAdults]   = useState(2);
+  const [months,   setMonths]   = useState<number[]>([]);
+  const barRef = useRef<HTMLDivElement>(null);
+  useClickOutside(barRef, () => setOpen(null));
+
+  function toggleMonth(i: number) {
+    setMonths(prev => prev.includes(i) ? prev.filter(m => m !== i) : [...prev, i]);
+  }
+
+  function handleFindTrips() {
+    const p = new URLSearchParams();
+    if (where !== 'Anywhere') p.set('region', where);
+    if (style)                p.set('type', style);
+    if (months.length > 0)    p.set('months', months.join(','));
+    if (adults !== 2)         p.set('adults', String(adults));
+    router.push('/packages' + (p.toString() ? '?' + p.toString() : ''));
+  }
+
+  const whenLabel = months.length === 0
+    ? 'Any month'
+    : months.length === 1
+      ? MONTHS[months[0]]
+      : `${months.length} months`;
 
   const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
 
@@ -29,30 +73,135 @@ export default function Home() {
             <div className="hero-meta-item">In the field<span>since 2017</span></div>
           </div>
         </div>
-        <div className="searchbar">
-          <div className="searchbar-field">
-            <label>Where</label>
-            <div className="val">Anywhere<span className="placeholder"> · pick a region</span></div>
-          </div>
-          <div className="searchbar-field">
-            <label>When</label>
-            <div className="val">Apr 14 — Apr 28</div>
-          </div>
-          <div className="searchbar-field">
-            <label>Travelers</label>
-            <div className="val">2 adults</div>
-          </div>
-          <div className="searchbar-field">
-            <label>Style</label>
-            <div className="val">Cultural · Slow</div>
-          </div>
-          <Link href="/packages" className="btn btn-clay" style={{height: 56, borderRadius: 4, padding: '0 28px'}}>
-            <Icon name="search" size={14}/> Find trips
-          </Link>
-        </div>
       </section>
 
-      <div className="spacer"></div>
+      {/* ── Interactive searchbar — outside hero so overflow:hidden never clips dropdowns ── */}
+      <div className="searchbar-wrap" ref={barRef}>
+        <div className="searchbar">
+
+          {/* WHERE */}
+          <div
+            className={'searchbar-field' + (open === 'where' ? ' sb-active' : '')}
+            onClick={() => setOpen(open === 'where' ? null : 'where')}
+          >
+            <label>Where</label>
+            <div className="val">{where}{where === 'Anywhere' && <span className="placeholder"> · pick a region</span>}</div>
+            {open === 'where' && (
+              <div className="sb-drop">
+                {REGIONS.map(r => (
+                  <div
+                    key={r}
+                    className={'sb-opt' + (where === r ? ' sb-opt-on' : '')}
+                    onClick={e => { e.stopPropagation(); setWhere(r); setOpen(null); }}
+                  >
+                    {r}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* WHEN */}
+          <div
+            className={'searchbar-field' + (open === 'when' ? ' sb-active' : '')}
+            onClick={() => setOpen(open === 'when' ? null : 'when')}
+          >
+            <label>When</label>
+            <div className="val">{whenLabel}</div>
+            {open === 'when' && (
+              <div className="sb-drop sb-drop-wide" onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 12 }}>Select months</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                  {MONTHS.map((m, i) => {
+                    const on = months.includes(i);
+                    return (
+                      <div
+                        key={m}
+                        onClick={() => toggleMonth(i)}
+                        style={{
+                          padding: '8px 0', textAlign: 'center', fontSize: 12,
+                          border: '1px solid var(--line-2)', borderRadius: 2,
+                          background: on ? 'var(--forest)' : 'var(--paper)',
+                          color: on ? 'white' : 'var(--ink-2)',
+                          cursor: 'pointer', fontFamily: 'var(--mono)',
+                          transition: 'background 0.12s, color 0.12s',
+                        }}
+                      >
+                        {m}
+                      </div>
+                    );
+                  })}
+                </div>
+                {months.length > 0 && (
+                  <button
+                    onClick={() => setMonths([])}
+                    style={{ marginTop: 10, background: 'none', border: 'none', fontSize: 11, color: 'var(--muted)', cursor: 'pointer', fontFamily: 'var(--mono)', textDecoration: 'underline' }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* TRAVELERS */}
+          <div
+            className={'searchbar-field' + (open === 'travelers' ? ' sb-active' : '')}
+            onClick={() => setOpen(open === 'travelers' ? null : 'travelers')}
+          >
+            <label>Travelers</label>
+            <div className="val">{adults} adult{adults !== 1 ? 's' : ''}</div>
+            {open === 'travelers' && (
+              <div className="sb-drop" onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 0' }}>
+                  <span style={{ fontSize: 14 }}>Adults</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button
+                      onClick={() => setAdults(a => Math.max(1, a - 1))}
+                      style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >−</button>
+                    <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 600 }}>{adults}</span>
+                    <button
+                      onClick={() => setAdults(a => Math.min(12, a + 1))}
+                      style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >+</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* STYLE */}
+          <div
+            className={'searchbar-field' + (open === 'style' ? ' sb-active' : '')}
+            onClick={() => setOpen(open === 'style' ? null : 'style')}
+          >
+            <label>Style</label>
+            <div className="val">
+              {style || <span className="placeholder">Any style</span>}
+            </div>
+            {open === 'style' && (
+              <div className="sb-drop" onClick={e => e.stopPropagation()}>
+                {['', ...STYLES].map(s => (
+                  <div
+                    key={s || '__any'}
+                    className={'sb-opt' + (style === s ? ' sb-opt-on' : '')}
+                    onClick={() => { setStyle(s); setOpen(null); }}
+                  >
+                    {s || 'Any style'}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button className="btn btn-clay" style={{ height: 56, borderRadius: 4, padding: '0 28px', flexShrink: 0 }} onClick={handleFindTrips}>
+            <Icon name="search" size={14} /> Find trips
+          </button>
+        </div>
+      </div>
+
+
 
       <section className="section">
         <div className="container">
@@ -175,8 +324,12 @@ export default function Home() {
           </div>
           <div className="dest-grid">
             {DESTINATIONS.map((d, i) => (
-              <Link key={i} href="/packages" className={'dest-card ' + (d.size || '')}
-                   style={{ backgroundImage: `url(${d.img})`, gridRow: d.size === 'lg' ? 'span 2' : undefined }}>
+              <Link
+                key={i}
+                href={`/packages?region=${encodeURIComponent(d.name.split(' ')[0] === 'Rajasthan' || d.name === 'Kerala' || d.name === 'Ladakh' ? 'India' : d.name === 'Dubai' || d.name === 'Abu Dhabi' ? 'UAE' : 'India')}`}
+                className={'dest-card ' + (d.size || '')}
+                style={{ backgroundImage: `url(${d.img})`, gridRow: d.size === 'lg' ? 'span 2' : undefined }}
+              >
                 <div className="dest-content">
                   <span className="eyebrow" style={{color:'rgba(255,255,255,0.85)'}}>{d.tag}</span>
                   <h3>{d.name}</h3>
