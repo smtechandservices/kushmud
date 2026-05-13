@@ -60,8 +60,7 @@ function BookingChart() {
   );
 }
 
-export default function AdminPage() {
-
+export default function AdminDashboard() {
   return (
     <div className="admin">
       <aside className="admin-side">
@@ -97,7 +96,7 @@ export default function AdminPage() {
             <span style={{marginLeft:'auto', fontFamily:'var(--mono)', fontSize:10, padding:'2px 6px', background:'white', border:'1px solid var(--line)', borderRadius:3}}>⌘ K</span>
           </div>
           <div style={{display:'flex', gap:10, alignItems:'center'}}>
-            <Link href="/" className="btn btn-ghost btn-sm">← View site</Link>
+            <Link href="http://localhost:3000" className="btn btn-ghost btn-sm">← View site</Link>
             <button className="btn btn-primary btn-sm"><Icon name="plus" size={13}/> New package</button>
           </div>
         </div>
