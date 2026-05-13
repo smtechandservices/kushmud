@@ -40,21 +40,21 @@ export default function AboutPage() {
           <span className="eyebrow">— Our Values</span>
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, marginTop: 40}}>
             <div>
-              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', marginBottom: 24}}>
+              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24}}>
                 <Icon name="leaf" size={20} style={{color: 'var(--forest)'}}/>
               </div>
               <h4>Quiet impact</h4>
               <p style={{marginTop: 12, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6}}>We prioritize local operators and fair-rate guides. Sustainability isn't a badge; it's how we balance our books.</p>
             </div>
             <div>
-              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', marginBottom: 24}}>
+              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24}}>
                 <Icon name="clock" size={20} style={{color: 'var(--forest)'}}/>
               </div>
               <h4>Considered pace</h4>
               <p style={{marginTop: 12, fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6}}>We build breath into every itinerary. Two anchor activities a day, leaving room for the unexpected.</p>
             </div>
             <div>
-              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', marginBottom: 24}}>
+              <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24}}>
                 <Icon name="shield" size={20} style={{color: 'var(--forest)'}}/>
               </div>
               <h4>Total transparency</h4>

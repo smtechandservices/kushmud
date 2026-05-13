@@ -4,9 +4,11 @@ interface IconProps {
   name: string;
   size?: number;
   stroke?: number;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5 }) => {
+export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5, className, style }) => {
   const props = { 
     width: size, 
     height: size, 
@@ -15,7 +17,9 @@ export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5 }) => 
     stroke: 'currentColor', 
     strokeWidth: stroke, 
     strokeLinecap: 'round' as const, 
-    strokeLinejoin: 'round' as const 
+    strokeLinejoin: 'round' as const,
+    className,
+    style
   };
   
   switch (name) {

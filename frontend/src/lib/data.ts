@@ -184,7 +184,7 @@ export const DESTINATIONS: Destination[] = [
 export const OFFERS: Offer[] = [
   { id: 'monsoon', tag: 'Monsoon Sale', title: 'Up to 25% off Kerala & Goa', sub: 'Book by May 31 · Travel through Aug', code: 'MONSOON25', img: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1200&auto=format&fit=crop', accent: '#1f3b30' },
   { id: 'gulf',    tag: 'Gulf Pairing', title: 'India + UAE — second city free', sub: 'Pair any India trip with 2 nights in Dubai or Abu Dhabi', code: 'GULFPAIR', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&auto=format&fit=crop', accent: '#c79a4a' },
-  { id: 'family',  tag: 'Families', title: 'Kids stay & fly free', sub: 'On every Rajasthan & Dubai trip · Two children under 12', code: 'FAMILYWF', img: 'https://images.unsplash.com/photo-1583395145039-1c50b89def85?w=1200&auto=format&fit=crop', accent: '#c45a3a' },
+  { id: 'family',  tag: 'Families', title: 'Kids stay & fly free', sub: 'On every Rajasthan & Dubai trip · Two children under 12', code: 'FAMILYWF', img: 'https://images.unsplash.com/photo-1583395145039-1c50b89def85?w=1200&auto=format&fit=crop', accent: '#1f3b30' },
 ];
 
 export const TESTIMONIALS: Testimonial[] = [

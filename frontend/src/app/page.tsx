@@ -5,19 +5,19 @@ import Link from 'next/link';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
 import { PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS } from '@/lib/data';
-import { useTweaks } from '@/components/TweakContext';
 import { MainLayout } from '@/components/MainLayout';
 
 export default function Home() {
-  const { tweaks } = useTweaks();
   const featured = PACKAGES.slice(0, 3);
   const trending = PACKAGES.slice(1, 5);
   const [testi, setTesti] = useState(0);
 
+  const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
+
   return (
     <MainLayout>
       <section className="hero">
-        <div className="hero-img" style={{ backgroundImage: `url(${tweaks.heroImg})` }}></div>
+        <div className="hero-img" style={{ backgroundImage: `url(${heroImg})` }}></div>
         <div className="hero-content">
           <div className="hero-eyebrow"><span className="line"></span> Kushmud · Spring '26 Collection</div>
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>

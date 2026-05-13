@@ -87,7 +87,7 @@ export default function AdminPage() {
             it.sec
               ? <div key={i} className="admin-nav-section">{it.sec}</div>
               : <Link key={i} href={it.href || '#'} className={it.active ? 'active' : ''}>
-                  <span className="ic"><Icon name={it.ic} size={14}/></span>
+                  <span className="ic"><Icon name={it.ic || 'home'} size={14}/></span>
                   <span style={{flex:1}}>{it.label}</span>
                   {it.count && <span style={{fontFamily:'var(--mono)', fontSize:10, color:'rgba(244,237,224,0.5)'}}>{it.count}</span>}
                 </Link>
@@ -138,7 +138,7 @@ export default function AdminPage() {
               <div className="lbl">Revenue (MTD)</div>
               <div className="v">$284k</div>
               <div className="delta up">▲ 8.1% vs. last month</div>
-              <Spark color="#c45a3a"/>
+              <Spark color="#1f3b30"/>
             </div>
             <div className="kpi">
               <div className="lbl">Pending inquiries</div>

@@ -1,14 +1,15 @@
+@import "tailwindcss";
+
 /* Wayfare — Travel Booking
    Earthy editorial palette: clay / sand / forest / charcoal
    Type: Newsreader (serif headline) + Geist (sans body) + JetBrains Mono (accents)
 */
 
 :root {
-  /* palette — set by Tweaks */
   --forest: #1f3b30;        /* primary deep green */
-  --forest-2: #2a4d3e;
-  --clay: #c45a3a;          /* terracotta accent */
-  --clay-2: #e07654;
+  --forest-2: #41584f;
+  --clay: #1f3b30;          /* matching primary as requested */
+  --clay-2: #395248;
   --sand: #f4ede0;          /* warm bg */
   --sand-2: #ebe1cf;
   --paper: #faf7f0;
@@ -17,7 +18,6 @@
   --muted: #756e63;
   --line: #d8cdb6;
   --line-2: #c9bda3;
-  --gold: #c79a4a;
 
   --shadow-sm: 0 1px 2px rgba(28,25,22,.06), 0 1px 1px rgba(28,25,22,.04);
   --shadow-md: 0 6px 24px -8px rgba(28,25,22,.18), 0 2px 6px rgba(28,25,22,.06);
@@ -162,9 +162,9 @@ button { font-family: inherit; cursor: pointer; }
 }
 .btn-primary:hover { background: var(--forest-2); }
 .btn-clay {
-  background: var(--clay);
+  background: var(--clay) !important;
   color: white;
-  border-color: var(--clay);
+  border-color: var(--clay) !important;
 }
 .btn-clay:hover { background: var(--clay-2); }
 .btn-ghost {

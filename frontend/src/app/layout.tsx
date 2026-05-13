@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Newsreader, Geist, JetBrains_Mono } from "next/font/google";
-import { Providers } from '@/components/MainLayout';
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -31,9 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${newsreader.variable} ${geist.variable} ${jetbrainsMono.variable} antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   );

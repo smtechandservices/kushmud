@@ -23,7 +23,7 @@ export default function PrivateTripsPage() {
             <h2 style={{marginTop: 16, fontSize: 40, lineHeight: 1.1}}>The Kushmud Private Service</h2>
             <div style={{marginTop: 40, display: 'flex', flexDirection: 'column', gap: 32}}>
               <div style={{display: 'flex', gap: 24}}>
-                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0}}>
+                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
                   <Icon name="users" size={18} style={{color: 'var(--clay)'}}/>
                 </div>
                 <div>
@@ -32,7 +32,7 @@ export default function PrivateTripsPage() {
                 </div>
               </div>
               <div style={{display: 'flex', gap: 24}}>
-                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0}}>
+                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
                   <Icon name="globe" size={18} style={{color: 'var(--clay)'}}/>
                 </div>
                 <div>
@@ -41,7 +41,7 @@ export default function PrivateTripsPage() {
                 </div>
               </div>
               <div style={{display: 'flex', gap: 24}}>
-                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyCenter: 'center', flexShrink: 0}}>
+                <div style={{width: 40, height: 40, borderRadius: '50%', background: 'var(--sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
                   <Icon name="shield" size={18} style={{color: 'var(--clay)'}}/>
                 </div>
                 <div>
