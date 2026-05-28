@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS } from '@/lib/data';
+import { 
+  PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS,
+  fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials,
+  Package, Offer, Destination, Testimonial 
+} from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
 const REGIONS = ['Anywhere', 'India', 'UAE'];
@@ -24,9 +28,38 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => voi
 
 export default function Home() {
   const router   = useRouter();
-  const featured = PACKAGES.slice(0, 3);
-  const trending = PACKAGES.slice(1, 5);
+  const [packages, setPackages] = useState<Package[]>(PACKAGES);
+  const [offers, setOffers] = useState<Offer[]>(OFFERS);
+  const [destinations, setDestinations] = useState<Destination[]>(DESTINATIONS);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(TESTIMONIALS);
   const [testi, setTesti] = useState(0);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const pkgs = await fetchPackages();
+        if (pkgs && pkgs.length > 0) setPackages(pkgs);
+      } catch (e) { console.error(e); }
+      try {
+        const offs = await fetchOffers();
+        if (offs && offs.length > 0) setOffers(offs);
+      } catch (e) { console.error(e); }
+      try {
+        const dests = await fetchDestinations();
+        if (dests && dests.length > 0) setDestinations(dests);
+      } catch (e) { console.error(e); }
+      try {
+        const testis = await fetchTestimonials();
+        if (testis && testis.length > 0) setTestimonials(testis);
+      } catch (e) { console.error(e); }
+    }
+    loadData();
+  }, []);
+
+  const featured = packages.filter(p => p.featured).slice(0, 3);
+  const featuredList = featured.length > 0 ? featured : packages.slice(0, 3);
+  const trendingList = packages.slice(1, 5);
+
 
   /* ── searchbar state ── */
   const [open,     setOpen]     = useState<string | null>(null);
@@ -213,11 +246,11 @@ export default function Home() {
             <div className="meta">Hand-selected by our field editors. Updated weekly with available dates and current weather notes.</div>
           </div>
           <div className="cards">
-            {featured.map(p => <PackageCard key={p.id} pkg={p} />)}
+            {featuredList.map(p => <PackageCard key={p.id} pkg={p} />)}
           </div>
         </div>
       </section>
-
+ 
       <section className="section trending">
         <div className="container">
           <div className="section-head">
@@ -231,7 +264,7 @@ export default function Home() {
             </div>
           </div>
           <div className="trend-grid">
-            {trending.map((p, i) => (
+            {trendingList.map((p, i) => (
               <Link key={p.id} href={`/packages/${p.id}`} className="trend-card">
                 <div className="trend-rank">{String(i+1).padStart(2,'0')}</div>
                 <div className="trend-img" style={{ backgroundImage: `url(${p.img})` }}>
@@ -253,7 +286,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+ 
       <section className="offers">
         <div className="container">
           <div className="section-head">
@@ -264,7 +297,7 @@ export default function Home() {
             <div className="meta" style={{color:'rgba(244,237,224,0.6)'}}>Limited dates. We honour any quoted price for 14 days from your first call.</div>
           </div>
           <div className="offers-grid">
-            {OFFERS.map(o => (
+            {offers.map(o => (
               <Link key={o.id} href="/packages" className="offer-card">
                 <div className="offer-img" style={{ backgroundImage: `url(${o.img})` }}></div>
                 <div className="offer-body">
@@ -281,7 +314,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+ 
       <section className="why">
         <div className="container">
           <div style={{maxWidth:680, marginBottom:56}}>
@@ -312,7 +345,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+ 
       <section className="section">
         <div className="container">
           <div className="section-head">
@@ -323,7 +356,7 @@ export default function Home() {
             <div className="meta">India and the UAE — two regions, hundreds of routes. We'd rather know two places deeply than fifty lightly.</div>
           </div>
           <div className="dest-grid">
-            {DESTINATIONS.map((d, i) => (
+            {destinations.map((d, i) => (
               <Link
                 key={i}
                 href={`/packages?region=${encodeURIComponent(d.name.split(' ')[0] === 'Rajasthan' || d.name === 'Kerala' || d.name === 'Ladakh' ? 'India' : d.name === 'Dubai' || d.name === 'Abu Dhabi' ? 'UAE' : 'India')}`}
@@ -340,23 +373,23 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+ 
       <section className="testi">
         <div className="container">
           <span className="eyebrow">— Travelers</span>
           <div style={{marginTop:36}}>
             <p className="testi-quote">
-              <span className="open">"</span>{TESTIMONIALS[testi].quote}
+              <span className="open">"</span>{(testimonials[testi] || TESTIMONIALS[0]).quote}
             </p>
             <div className="testi-attrib">
-              <div className="testi-avatar" style={{ backgroundImage: `url(${TESTIMONIALS[testi].avatar})`}}></div>
+              <div className="testi-avatar" style={{ backgroundImage: `url(${(testimonials[testi] || TESTIMONIALS[0]).avatar})`}}></div>
               <div>
-                <div className="testi-name">{TESTIMONIALS[testi].name}</div>
-                <div className="testi-place">{TESTIMONIALS[testi].place}</div>
+                <div className="testi-name">{(testimonials[testi] || TESTIMONIALS[0]).name}</div>
+                <div className="testi-place">{(testimonials[testi] || TESTIMONIALS[0]).place}</div>
               </div>
             </div>
             <div className="testi-nav">
-              {TESTIMONIALS.map((_, i) =>
+              {testimonials.map((_, i) =>
                 <button key={i} className={'testi-dot ' + (i === testi ? 'active' : '')} onClick={() => setTesti(i)}></button>
               )}
             </div>

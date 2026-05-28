@@ -1,17 +1,107 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
-import { PACKAGES } from '@/lib/data';
+import { PACKAGES, createBooking } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const pkgId = searchParams.get('pkg');
   const pkg = PACKAGES.find(p => p.id === pkgId) || PACKAGES[0];
-  
+
+  const [firstName, setFirstName] = useState('Alex');
+  const [lastName, setLastName] = useState('Morgan');
+  const [email, setEmail] = useState('alex.morgan@email.com');
+  const [phone, setPhone] = useState('+1 (415) 555 0192');
+  const [passportCountry, setPassportCountry] = useState('United States');
+  const [dietaryNotes, setDietaryNotes] = useState('');
+  const [traveler2First, setTraveler2First] = useState('Sam');
+  const [traveler2Last, setTraveler2Last] = useState('Morgan');
+  const [traveler2Dob, setTraveler2Dob] = useState('1989-07-12');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [bookingRef, setBookingRef] = useState('');
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const data = await createBooking({
+        name: `${firstName} ${lastName}`,
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop",
+        pkg: pkg.title,
+        dates: "Oct 18 — Oct 26, 2026",
+        total: pkg.price * 2 + 72,
+        status: "pending",
+        email: email,
+        phone: phone,
+        passport_country: passportCountry,
+        dietary_notes: dietaryNotes,
+        traveler_2_name: `${traveler2First} ${traveler2Last}`,
+        traveler_2_dob: traveler2Dob
+      });
+      setBookingRef(data.id || 'WF-2842');
+      setIsSuccess(true);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to submit booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="container" style={{padding: '80px 0', maxWidth: 600, margin: '0 auto', textAlign: 'center'}}>
+        <div style={{
+          width: 80, 
+          height: 80, 
+          borderRadius: '50%', 
+          background: 'rgba(235, 110, 75, 0.1)', 
+          color: 'var(--clay)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          margin: '0 auto 24px'
+        }}>
+          <Icon name="check" size={32} stroke={3}/>
+        </div>
+        <h2 style={{fontSize: 32, marginBottom: 12}}>Booking Request Sent!</h2>
+        <p style={{color: 'var(--ink-2)', fontSize: 16, lineHeight: 1.5, marginBottom: 32}}>
+          Thank you for choosing Wayfare. Your booking request has been successfully submitted and saved.
+          Our planner will review details and connect with you within four hours.
+        </p>
+        <div style={{
+          background: 'var(--paper-2)', 
+          border: '1px solid var(--line-2)', 
+          borderRadius: 8, 
+          padding: '20px 24px', 
+          marginBottom: 40,
+          textAlign: 'left'
+        }}>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 12}}>
+            <span style={{color: 'var(--muted)', fontSize: 13}}>Booking Reference</span>
+            <strong style={{fontFamily: 'var(--mono)', color: 'var(--ink)'}}>{bookingRef}</strong>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: 12}}>
+            <span style={{color: 'var(--muted)', fontSize: 13}}>Trip Package</span>
+            <span style={{color: 'var(--ink)', fontWeight: 500}}>{pkg.title}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <span style={{color: 'var(--muted)', fontSize: 13}}>Total Cost</span>
+            <span style={{color: 'var(--ink)', fontWeight: 500}}>${(pkg.price * 2 + 72).toLocaleString()}</span>
+          </div>
+        </div>
+        <Link href="/" className="btn btn-clay btn-lg" style={{display: 'inline-flex', padding: '14px 28px', textDecoration: 'none'}}>
+          Return to Homepage <Icon name="arrow-right" size={14} style={{marginLeft: 8}}/>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
       <div className="crumbs" style={{padding:'32px 0 8px'}}>Kushmud / {pkg.title} / <span>Booking</span></div>
@@ -33,27 +123,38 @@ function CheckoutContent() {
           <div className="formgrid">
             <div className="field-group">
               <label>First name</label>
-              <input defaultValue="Alex"/>
+              <input value={firstName} onChange={e => setFirstName(e.target.value)}/>
             </div>
             <div className="field-group">
               <label>Last name</label>
-              <input defaultValue="Morgan"/>
+              <input value={lastName} onChange={e => setLastName(e.target.value)}/>
             </div>
             <div className="field-group full">
               <label>Email</label>
-              <input defaultValue="alex.morgan@email.com"/>
+              <input value={email} onChange={e => setEmail(e.target.value)}/>
             </div>
             <div className="field-group">
               <label>Phone</label>
-              <input defaultValue="+1 (415) 555 0192"/>
+              <input value={phone} onChange={e => setPhone(e.target.value)}/>
             </div>
             <div className="field-group">
               <label>Passport country</label>
-              <select><option>United States</option></select>
+              <select value={passportCountry} onChange={e => setPassportCountry(e.target.value)}>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="India">India</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+              </select>
             </div>
             <div className="field-group full">
               <label>Dietary or access notes (optional)</label>
-              <input placeholder="Vegetarian, mobility needs, allergies…"/>
+              <input 
+                placeholder="Vegetarian, mobility needs, allergies…"
+                value={dietaryNotes}
+                onChange={e => setDietaryNotes(e.target.value)}
+              />
             </div>
           </div>
 
@@ -63,15 +164,15 @@ function CheckoutContent() {
           <div className="formgrid">
             <div className="field-group">
               <label>First name</label>
-              <input defaultValue="Sam"/>
+              <input value={traveler2First} onChange={e => setTraveler2First(e.target.value)}/>
             </div>
             <div className="field-group">
               <label>Last name</label>
-              <input defaultValue="Morgan"/>
+              <input value={traveler2Last} onChange={e => setTraveler2Last(e.target.value)}/>
             </div>
             <div className="field-group full">
               <label>Date of birth</label>
-              <input defaultValue="1989-07-12"/>
+              <input value={traveler2Dob} onChange={e => setTraveler2Dob(e.target.value)}/>
             </div>
           </div>
 
@@ -99,14 +200,18 @@ function CheckoutContent() {
             </div>
             <div className="field-group full">
               <label>Cardholder name</label>
-              <input defaultValue="Alex Morgan"/>
+              <input defaultValue={`${firstName} ${lastName}`}/>
             </div>
           </div>
 
           <div style={{display:'flex', justifyContent:'space-between', marginTop:48, alignItems:'center'}}>
             <Link href={`/packages/${pkg.id}`} className="btn btn-ghost">← Back to itinerary</Link>
-            <button className="btn btn-clay btn-lg" onClick={() => alert('Booking submitted — your planner will be in touch within 4 hours.')}>
-              Reserve trip · ${(pkg.price * 2 + 72).toLocaleString()} <Icon name="arrow-right" size={14}/>
+            <button 
+              className="btn btn-clay btn-lg" 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Reserving...' : `Reserve trip · $${(pkg.price * 2 + 72).toLocaleString()}`} <Icon name="arrow-right" size={14}/>
             </button>
           </div>
         </div>

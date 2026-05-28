@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   description: "Considered travel across India and the UAE.",
 };
 
+import { AuthGuard } from "@/components/AuthGuard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${newsreader.variable} ${geist.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
+        <AuthGuard>
+          {children}
+        </AuthGuard>
       </body>
     </html>
   );

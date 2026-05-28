@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { PACKAGES } from '@/lib/data';
+import { PACKAGES, fetchPackages, Package } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 import filtersData from '@/assets/packages-filters.json';
 
@@ -23,6 +23,19 @@ function durationMatches(d: number, bucket: string) {
 
 function ListingContent() {
   const searchParams = useSearchParams();
+  const [packages, setPackages] = useState<Package[]>(PACKAGES);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const pkgs = await fetchPackages();
+        if (pkgs && pkgs.length > 0) setPackages(pkgs);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    load();
+  }, []);
 
   const [typeFilters, setTypeFilters] = useState<Set<string>>(() => {
     const t = searchParams.get('type');
@@ -70,7 +83,7 @@ function ListingContent() {
                      priceMax < PRICE_MAX;
 
   const filtered = useMemo(() => {
-    let res = [...PACKAGES];
+    let res = [...packages];
     if (typeFilters.size > 0)     res = res.filter(p => typeFilters.has(p.type));
     if (regionFilters.size > 0)   res = res.filter(p => regionFilters.has(p.region));
     if (durationFilters.size > 0) res = res.filter(p => [...durationFilters].some(b => durationMatches(p.duration, b)));
@@ -84,7 +97,7 @@ function ListingContent() {
       case 'duration':   res.sort((a, b) => a.duration - b.duration); break;
     }
     return res;
-  }, [typeFilters, regionFilters, durationFilters, priceMax, sort]);
+  }, [typeFilters, regionFilters, durationFilters, priceMax, sort, packages]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const safePage   = Math.min(page, totalPages);
@@ -140,7 +153,7 @@ function ListingContent() {
                     <span className="box">{typeFilters.has(tp) && <Icon name="check" size={9} stroke={3} />}</span>
                     <span>{tp}</span>
                   </div>
-                  <span className="fopt-count">{PACKAGES.filter(p => p.type === tp).length}</span>
+                  <span className="fopt-count">{packages.filter(p => p.type === tp).length}</span>
                 </div>
               ))}
             </div>
@@ -157,7 +170,7 @@ function ListingContent() {
                     <span className="box">{regionFilters.has(r.name) && <Icon name="check" size={9} stroke={3} />}</span>
                     <span>{r.name}</span>
                   </div>
-                  <span className="fopt-count">{PACKAGES.filter(p => p.region === r.name).length}</span>
+                  <span className="fopt-count">{packages.filter(p => p.region === r.name).length}</span>
                 </div>
               ))}
             </div>
@@ -196,7 +209,7 @@ function ListingContent() {
                     <span>{d}</span>
                   </div>
                   <span className="fopt-count">
-                    {PACKAGES.filter(p => durationMatches(p.duration, d)).length}
+                    {packages.filter(p => durationMatches(p.duration, d)).length}
                   </span>
                 </div>
               ))}

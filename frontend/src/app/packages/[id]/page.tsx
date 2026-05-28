@@ -1,15 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
-import { PACKAGES, ITINERARY_RAJASTHAN, TESTIMONIALS } from '@/lib/data';
+import { PACKAGES, ITINERARY_RAJASTHAN, TESTIMONIALS, fetchPackageById, Package } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
 export default function DetailPage() {
   const { id } = useParams();
-  const pkg = PACKAGES.find(p => p.id === id) || PACKAGES[0];
+  const packageId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
+  const [pkg, setPkg] = useState<Package>(() => {
+    const staticPkg = PACKAGES.find(p => p.id === packageId);
+    return staticPkg || PACKAGES[0];
+  });
+
+  useEffect(() => {
+    if (!packageId) return;
+    async function load() {
+      try {
+        const data = await fetchPackageById(packageId);
+        if (data) setPkg(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    load();
+  }, [packageId]);
   
   return (
     <MainLayout>
