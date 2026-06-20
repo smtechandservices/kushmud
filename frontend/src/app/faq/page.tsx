@@ -1,12 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
-import FAQS from '@/assets/faqs.json';
+import { fetchFaqs, Faq } from '@/lib/data';
 
 export default function FAQPage() {
   const [active, setActive] = useState<number | null>(0);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+
+  useEffect(() => {
+    fetchFaqs().then(setFaqs).catch(console.error);
+  }, []);
 
   return (
     <MainLayout>
@@ -20,7 +25,7 @@ export default function FAQPage() {
       <div className="container" style={{padding: '80px 40px 120px'}}>
         <div style={{maxWidth: 800, margin: '0 auto'}}>
           <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
-            {FAQS.map((faq, i) => (
+            {faqs.map((faq, i) => (
               <div key={i} style={{borderBottom: '1px solid var(--line)', paddingBottom: 16}}>
                 <button 
                   onClick={() => setActive(active === i ? null : i)}

@@ -1,12 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
 import Link from 'next/link';
-import STORIES from '@/assets/stories.json';
+import { fetchStories, Story } from '@/lib/data';
 
 export default function StoriesPage() {
+  const [stories, setStories] = useState<Story[]>([]);
+
+  useEffect(() => {
+    fetchStories().then(setStories).catch(console.error);
+  }, []);
+
   return (
     <MainLayout>
       <div className="page-head">
@@ -33,7 +39,7 @@ export default function StoriesPage() {
           <aside>
             <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 32, paddingBottom: 16, borderBottom: '1px solid var(--line)'}}>Latest Entries</h4>
             <div style={{display: 'flex', flexDirection: 'column', gap: 40}}>
-              {STORIES.map((s, i) => (
+              {stories.map((s, i) => (
                 <div key={i} style={{display: 'flex', gap: 24}}>
                   <div style={{width: 100, height: 100, borderRadius: 2, backgroundImage: `url(${s.img})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0}}></div>
                   <div>
@@ -53,7 +59,7 @@ export default function StoriesPage() {
             <button className="btn btn-ghost">View all stories</button>
           </div>
           <div className="cards">
-            {STORIES.map((s, i) => (
+            {stories.map((s, i) => (
               <div key={i} className="card">
                 <div className="card-img wide" style={{backgroundImage: `url(${s.img})`}}></div>
                 <div>

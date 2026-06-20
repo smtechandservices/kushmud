@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
-import { createContactInquiry } from '@/lib/data';
 
 export default function ContactPage() {
   const [firstName, setFirstName] = useState('');
@@ -22,25 +21,13 @@ export default function ContactPage() {
       return;
     }
     setIsSubmitting(true);
-    try {
-      await createContactInquiry({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        destination,
-        message
-      });
-      setIsSuccess(true);
-      setFirstName('');
-      setLastName('');
-      setEmail('');
-      setMessage('');
-    } catch (e) {
-      console.error(e);
-      alert('Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    await new Promise(r => setTimeout(r, 800));
+    setIsSuccess(true);
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setMessage('');
+    setIsSubmitting(false);
   };
 
   return (

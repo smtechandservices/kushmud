@@ -1,16 +1,21 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
-import { PACKAGES, createBooking } from '@/lib/data';
+import { fetchPackages, Package } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const pkgId = searchParams.get('pkg');
-  const pkg = PACKAGES.find(p => p.id === pkgId) || PACKAGES[0];
+  const [packages, setPackages] = useState<Package[]>([]);
+  const pkg = packages.find(p => p.id === pkgId) || packages[0];
+
+  useEffect(() => {
+    fetchPackages().then(pkgs => { if (pkgs.length) setPackages(pkgs); }).catch(console.error);
+  }, []);
 
   const [firstName, setFirstName] = useState('Alex');
   const [lastName, setLastName] = useState('Morgan');
@@ -28,30 +33,16 @@ function CheckoutContent() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    try {
-      const data = await createBooking({
-        name: `${firstName} ${lastName}`,
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop",
-        pkg: pkg.title,
-        dates: "Oct 18 — Oct 26, 2026",
-        total: pkg.price * 2 + 72,
-        status: "pending",
-        email: email,
-        phone: phone,
-        passport_country: passportCountry,
-        dietary_notes: dietaryNotes,
-        traveler_2_name: `${traveler2First} ${traveler2Last}`,
-        traveler_2_dob: traveler2Dob
-      });
-      setBookingRef(data.id || 'WF-2842');
-      setIsSuccess(true);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to submit booking. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    await new Promise(r => setTimeout(r, 900));
+    const ref = 'KM-' + String(Math.floor(Math.random() * 9000) + 1000);
+    setBookingRef(ref);
+    setIsSuccess(true);
+    setIsSubmitting(false);
   };
+
+  if (!pkg) {
+    return <div className="container" style={{padding: '100px 0', textAlign: 'center', color: 'var(--muted)'}}>Loading...</div>;
+  }
 
   if (isSuccess) {
     return (

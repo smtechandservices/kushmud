@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { 
-  PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS,
+import {
   fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials,
-  Package, Offer, Destination, Testimonial 
+  Package, Offer, Destination, Testimonial
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
@@ -28,10 +27,10 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => voi
 
 export default function Home() {
   const router   = useRouter();
-  const [packages, setPackages] = useState<Package[]>(PACKAGES);
-  const [offers, setOffers] = useState<Offer[]>(OFFERS);
-  const [destinations, setDestinations] = useState<Destination[]>(DESTINATIONS);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(TESTIMONIALS);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [testi, setTesti] = useState(0);
 
   useEffect(() => {
@@ -379,13 +378,13 @@ export default function Home() {
           <span className="eyebrow">— Travelers</span>
           <div style={{marginTop:36}}>
             <p className="testi-quote">
-              <span className="open">"</span>{(testimonials[testi] || TESTIMONIALS[0]).quote}
+              <span className="open">"</span>{(testimonials[testi] || testimonials[0] || { quote: '', avatar: '', name: '', place: '' }).quote}
             </p>
             <div className="testi-attrib">
-              <div className="testi-avatar" style={{ backgroundImage: `url(${(testimonials[testi] || TESTIMONIALS[0]).avatar})`}}></div>
+              <div className="testi-avatar" style={{ backgroundImage: `url(${(testimonials[testi] || testimonials[0] || { quote: '', avatar: '', name: '', place: '' }).avatar})`}}></div>
               <div>
-                <div className="testi-name">{(testimonials[testi] || TESTIMONIALS[0]).name}</div>
-                <div className="testi-place">{(testimonials[testi] || TESTIMONIALS[0]).place}</div>
+                <div className="testi-name">{(testimonials[testi] || testimonials[0] || { quote: '', avatar: '', name: '', place: '' }).name}</div>
+                <div className="testi-place">{(testimonials[testi] || testimonials[0] || { quote: '', avatar: '', name: '', place: '' }).place}</div>
               </div>
             </div>
             <div className="testi-nav">

@@ -4,11 +4,8 @@ import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { PACKAGES, fetchPackages, Package } from '@/lib/data';
+import { fetchPackages, fetchPackageFilters, Package, PackageFilters } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
-import filtersData from '@/assets/packages-filters.json';
-
-const { types, regions, durations, months, sortOptions } = filtersData;
 
 const PER_PAGE  = 6;
 const PRICE_MAX = 5000;
@@ -21,21 +18,21 @@ function durationMatches(d: number, bucket: string) {
   return false;
 }
 
+const DEFAULT_FILTERS: PackageFilters = {
+  types: [], regions: [], durations: [], months: [], sortOptions: [],
+};
+
 function ListingContent() {
   const searchParams = useSearchParams();
-  const [packages, setPackages] = useState<Package[]>(PACKAGES);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [filters, setFilters] = useState<PackageFilters>(DEFAULT_FILTERS);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const pkgs = await fetchPackages();
-        if (pkgs && pkgs.length > 0) setPackages(pkgs);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    load();
+    fetchPackages().then(pkgs => { if (pkgs.length) setPackages(pkgs); }).catch(console.error);
+    fetchPackageFilters().then(setFilters).catch(console.error);
   }, []);
+
+  const { types, regions, durations, months, sortOptions } = filters;
 
   const [typeFilters, setTypeFilters] = useState<Set<string>>(() => {
     const t = searchParams.get('type');

@@ -4,30 +4,31 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
-import { PACKAGES, ITINERARY_RAJASTHAN, TESTIMONIALS, fetchPackageById, Package } from '@/lib/data';
+import { fetchPackageById, fetchItinerary, fetchTestimonials, Package, ItineraryDay, Testimonial } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
 export default function DetailPage() {
   const { id } = useParams();
   const packageId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
-  const [pkg, setPkg] = useState<Package>(() => {
-    const staticPkg = PACKAGES.find(p => p.id === packageId);
-    return staticPkg || PACKAGES[0];
-  });
+  const [pkg, setPkg] = useState<Package | null>(null);
+  const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   useEffect(() => {
     if (!packageId) return;
-    async function load() {
-      try {
-        const data = await fetchPackageById(packageId);
-        if (data) setPkg(data);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    load();
+    fetchPackageById(packageId).then(setPkg).catch(console.error);
+    fetchItinerary().then(setItinerary).catch(console.error);
+    fetchTestimonials().then(setTestimonials).catch(console.error);
   }, [packageId]);
   
+  if (!pkg) {
+    return (
+      <MainLayout>
+        <div className="container" style={{padding: '120px 0', textAlign: 'center', color: 'var(--muted)'}}>Loading...</div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="container" style={{paddingTop:32}}>
@@ -71,7 +72,7 @@ export default function DetailPage() {
             <div className="detail-section">
               <h3>Day by day</h3>
               <div className="itin">
-                {ITINERARY_RAJASTHAN.map((d, i) => (
+                {itinerary.map((d, i) => (
                   <div key={i} className="itin-day">
                     <div className="day-label">Day<span className="num">0{i+1}</span></div>
                     <div>
@@ -115,10 +116,10 @@ export default function DetailPage() {
                       {[0,1,2,3,4].map(s => <Icon key={s} name="star" size={12} stroke={0}/>)}
                     </div>
                     <p style={{fontFamily:'var(--serif)', fontSize:18, lineHeight:1.4, color:'var(--ink)'}}>
-                      "{TESTIMONIALS[i].quote}"
+                      "{testimonials[i].quote}"
                     </p>
                     <div style={{marginTop:14, fontSize:13, color:'var(--muted)', fontFamily:'var(--mono)', letterSpacing:'0.08em', textTransform:'uppercase'}}>
-                      — {TESTIMONIALS[i].name}, {TESTIMONIALS[i].place.replace('Booked: ', '')}
+                      — {testimonials[i].name}, {testimonials[i].place.replace('Booked: ', '')}
                     </div>
                   </div>
                 ))}

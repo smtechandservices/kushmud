@@ -1,12 +1,3 @@
-// data.ts — Wayfare package data and shared assets
-
-import packagesData from '@/assets/packages.json';
-import destinationsData from '@/assets/destinations.json';
-import offersData from '@/assets/offers.json';
-import testimonialsData from '@/assets/testimonials.json';
-import itineraryData from '@/assets/itinerary-rajasthan.json';
-import bookingsData from '@/assets/bookings.json';
-
 export interface Package {
   id: string;
   title: string;
@@ -68,92 +59,79 @@ export interface ItineraryDay {
   activities: string[];
 }
 
-export const PACKAGES: Package[] = packagesData as Package[];
-export const DESTINATIONS: Destination[] = destinationsData as Destination[];
-export const OFFERS: Offer[] = offersData as Offer[];
-export const TESTIMONIALS: Testimonial[] = testimonialsData as Testimonial[];
-export const ITINERARY_RAJASTHAN: ItineraryDay[] = itineraryData as ItineraryDay[];
-export const BOOKINGS: Booking[] = bookingsData as Booking[];
+export interface Faq {
+  q: string;
+  a: string;
+}
 
-export const getApiUrl = (path: string) => {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  return `${base}${path}`;
-};
+export interface Story {
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  img: string;
+  tag: string;
+}
+
+export interface PackageFilters {
+  types: string[];
+  regions: { name: string; count: number }[];
+  durations: string[];
+  months: string[];
+  sortOptions: { label: string; value: string }[];
+}
 
 export async function fetchPackages(): Promise<Package[]> {
-  try {
-    const res = await fetch(getApiUrl('/api/packages/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local packages data', e);
-    return PACKAGES;
-  }
+  const res = await fetch('/data/packages.json');
+  if (!res.ok) throw new Error('Failed to load packages');
+  return res.json();
 }
 
 export async function fetchPackageById(id: string): Promise<Package> {
-  try {
-    const res = await fetch(getApiUrl(`/api/packages/${id}/`));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn(`Fallback to local package data for ID: ${id}`, e);
-    const found = PACKAGES.find(p => p.id === id);
-    if (!found) throw new Error(`Package not found: ${id}`);
-    return found;
-  }
+  const packages = await fetchPackages();
+  const found = packages.find(p => p.id === id);
+  if (!found) throw new Error(`Package not found: ${id}`);
+  return found;
 }
 
 export async function fetchDestinations(): Promise<Destination[]> {
-  try {
-    const res = await fetch(getApiUrl('/api/destinations/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local destinations data', e);
-    return DESTINATIONS;
-  }
+  const res = await fetch('/data/destinations.json');
+  if (!res.ok) throw new Error('Failed to load destinations');
+  return res.json();
 }
 
 export async function fetchOffers(): Promise<Offer[]> {
-  try {
-    const res = await fetch(getApiUrl('/api/offers/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local offers data', e);
-    return OFFERS;
-  }
+  const res = await fetch('/data/offers.json');
+  if (!res.ok) throw new Error('Failed to load offers');
+  return res.json();
 }
 
 export async function fetchTestimonials(): Promise<Testimonial[]> {
-  try {
-    const res = await fetch(getApiUrl('/api/testimonials/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local testimonials data', e);
-    return TESTIMONIALS;
-  }
+  const res = await fetch('/data/testimonials.json');
+  if (!res.ok) throw new Error('Failed to load testimonials');
+  return res.json();
 }
 
-export async function createBooking(bookingData: any): Promise<any> {
-  const res = await fetch(getApiUrl('/api/bookings/'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(bookingData),
-  });
-  if (!res.ok) throw new Error('Failed to submit booking');
-  return await res.json();
+export async function fetchItinerary(): Promise<ItineraryDay[]> {
+  const res = await fetch('/data/itinerary-rajasthan.json');
+  if (!res.ok) throw new Error('Failed to load itinerary');
+  return res.json();
 }
 
-export async function createContactInquiry(inquiryData: any): Promise<any> {
-  const res = await fetch(getApiUrl('/api/inquiries/'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(inquiryData),
-  });
-  if (!res.ok) throw new Error('Failed to submit inquiry');
-  return await res.json();
+export async function fetchFaqs(): Promise<Faq[]> {
+  const res = await fetch('/data/faqs.json');
+  if (!res.ok) throw new Error('Failed to load faqs');
+  return res.json();
 }
 
+export async function fetchStories(): Promise<Story[]> {
+  const res = await fetch('/data/stories.json');
+  if (!res.ok) throw new Error('Failed to load stories');
+  return res.json();
+}
+
+export async function fetchPackageFilters(): Promise<PackageFilters> {
+  const res = await fetch('/data/packages-filters.json');
+  if (!res.ok) throw new Error('Failed to load filters');
+  return res.json();
+}
