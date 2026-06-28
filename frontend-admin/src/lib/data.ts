@@ -161,6 +161,16 @@ export async function createPackage(packageData: any): Promise<Package> {
   return await res.json();
 }
 
+export async function updatePackage(id: string, packageData: Partial<Package>): Promise<Package> {
+  const res = await authFetch(getApiUrl(`/api/packages/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(packageData),
+  });
+  if (!res.ok) throw new Error('Failed to update package');
+  return await res.json();
+}
+
 export async function deletePackage(id: string): Promise<void> {
   const res = await authFetch(getApiUrl(`/api/packages/${id}/`), {
     method: 'DELETE',
