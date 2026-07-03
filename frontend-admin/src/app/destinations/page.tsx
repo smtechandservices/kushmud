@@ -12,10 +12,11 @@ export default function DestinationsPage() {
   const [newDest, setNewDest] = useState({
     name: '',
     count: 0,
-    img: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&auto=format&fit=crop',
+    img: '',
     tag: 'Explore',
     size: '',
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
     try {
@@ -39,7 +40,7 @@ export default function DestinationsPage() {
       setShowModal(false);
       setNewDest({
         name: '', count: 0,
-        img: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&auto=format&fit=crop',
+        img: '',
         tag: 'Explore', size: '',
       });
       await loadData();
@@ -58,6 +59,15 @@ export default function DestinationsPage() {
     }
   };
 
+  const filteredDestinations = destinations.filter(d => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      d.name.toLowerCase().includes(q) ||
+      d.tag.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="admin">
       <Sidebar />
@@ -65,7 +75,13 @@ export default function DestinationsPage() {
         <div className="admin-top">
           <div className="admin-search">
             <Icon name="search" size={14}/>
-            <span>Search destinations…</span>
+            <input
+              type="text"
+              placeholder="Search destinations…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
+            />
           </div>
           <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
             <Icon name="plus" size={13}/> New destination
@@ -90,9 +106,14 @@ export default function DestinationsPage() {
               <Icon name="globe" size={32} style={{marginBottom: 16, color: 'var(--clay)'}} />
               <p>No destinations yet. Click "New destination" to add one.</p>
             </div>
+          ) : filteredDestinations.length === 0 ? (
+            <div className="panel" style={{padding: 64, textAlign: 'center', color: 'var(--muted)'}}>
+              <Icon name="search" size={32} style={{marginBottom: 16, color: 'var(--clay)'}} />
+              <p>No results match your search.</p>
+            </div>
           ) : (
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:20}}>
-              {destinations.map(d => (
+              {filteredDestinations.map(d => (
                 <div key={d.name} className="panel" style={{padding:0, overflow:'hidden'}}>
                   <div style={{
                     height:160, backgroundImage:`url(${d.img})`,

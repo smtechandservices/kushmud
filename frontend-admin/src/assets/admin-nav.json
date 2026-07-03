@@ -8,6 +8,11 @@
   { "ic": "tag",      "label": "Offers & promotions",               "href": "/offers" },
   { "ic": "globe",    "label": "Destinations",                      "href": "/destinations" },
   { "ic": "mail",     "label": "Newsletters",                       "href": "/newsletters" },
+  { "sec": "Content" },
+  { "ic": "star",     "label": "Testimonials",                      "href": "/testimonials" },
+  { "ic": "help-circle", "label": "FAQs",                           "href": "/faqs" },
+  { "ic": "book",     "label": "Stories",                           "href": "/stories" },
+  { "ic": "users",    "label": "Careers",                           "href": "/careers" },
   { "sec": "Insights" },
   { "ic": "chart",    "label": "Analytics",                         "href": "/analytics" },
   { "ic": "settings", "label": "Settings",                          "href": "/settings" }

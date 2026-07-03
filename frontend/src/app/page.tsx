@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { 
-  PACKAGES, OFFERS, DESTINATIONS, TESTIMONIALS,
-  fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials,
-  Package, Offer, Destination, Testimonial 
+import {
+  fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials, fetchSiteStats,
+  subscribeToNewsletter,
+  Package, Offer, Destination, Testimonial, SiteStats
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
@@ -28,11 +28,12 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => voi
 
 export default function Home() {
   const router   = useRouter();
-  const [packages, setPackages] = useState<Package[]>(PACKAGES);
-  const [offers, setOffers] = useState<Offer[]>(OFFERS);
-  const [destinations, setDestinations] = useState<Destination[]>(DESTINATIONS);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(TESTIMONIALS);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [testi, setTesti] = useState(0);
+  const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -52,13 +53,17 @@ export default function Home() {
         const testis = await fetchTestimonials();
         if (testis && testis.length > 0) setTestimonials(testis);
       } catch (e) { console.error(e); }
+      try {
+        const stats = await fetchSiteStats();
+        setSiteStats(stats);
+      } catch (e) { console.error(e); }
     }
     loadData();
   }, []);
 
   const featured = packages.filter(p => p.featured).slice(0, 3);
   const featuredList = featured.length > 0 ? featured : packages.slice(0, 3);
-  const trendingList = packages.slice(1, 5);
+  const trendingList = siteStats?.trending ?? [];
 
 
   /* ── searchbar state ── */
@@ -89,6 +94,28 @@ export default function Home() {
       ? MONTHS[months[0]]
       : `${months.length} months`;
 
+  /* ── newsletter form state ── */
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [newsletterMessage, setNewsletterMessage] = useState('');
+
+  async function handleNewsletterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    setNewsletterMessage('');
+    try {
+      await subscribeToNewsletter(newsletterEmail);
+      setNewsletterStatus('success');
+      setNewsletterMessage("Thanks — you're subscribed.");
+      setNewsletterEmail('');
+    } catch (err) {
+      console.error(err);
+      setNewsletterStatus('error');
+      setNewsletterMessage('Something went wrong, please try again.');
+    }
+  }
+
   const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
 
   return (
@@ -100,9 +127,9 @@ export default function Home() {
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>
           <p className="hero-sub">Considered itineraries across India and the UAE, planned by people who've actually slept in the haveli, taken the desert drive and walked the bazaar.</p>
           <div className="hero-meta">
-            <div className="hero-meta-item">Active trips<span>1,840</span></div>
-            <div className="hero-meta-item">Cities covered<span>32</span></div>
-            <div className="hero-meta-item">Avg. rating<span>4.9 / 5</span></div>
+            <div className="hero-meta-item">Active trips<span>{siteStats ? siteStats.active_trips.toLocaleString() : '—'}</span></div>
+            <div className="hero-meta-item">Cities covered<span>{siteStats ? siteStats.cities_covered : '—'}</span></div>
+            <div className="hero-meta-item">Avg. rating<span>{siteStats ? `${siteStats.avg_rating} / 5` : '—'}</span></div>
             <div className="hero-meta-item">In the field<span>since 2017</span></div>
           </div>
         </div>
@@ -251,42 +278,50 @@ export default function Home() {
         </div>
       </section>
  
-      <section className="section trending">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">— Trending now</span>
-              <h2>What travelers are <em style={{fontStyle:'italic'}}>booking this week</em></h2>
+      {trendingList.length > 0 && (
+        <section className="section trending">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">— Trending now</span>
+                <h2>
+                  {siteStats?.trending_basis === 'inquiries'
+                    ? <>What travelers are <em style={{fontStyle:'italic'}}>booking this week</em></>
+                    : <>Our <em style={{fontStyle:'italic'}}>highest-rated trips</em></>}
+                </h2>
+              </div>
+              <div className="meta" style={{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}}>
+                <span>
+                  {siteStats?.trending_basis === 'inquiries'
+                    ? 'Ranked by inquiries over the last 7 days.'
+                    : 'Handpicked favorites, ranked by traveler rating.'}
+                </span>
+              </div>
             </div>
-            <div className="meta" style={{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}}>
-              <span style={{fontFamily:'var(--mono)', fontSize:11, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--clay)'}}>● Live · updated 14 min ago</span>
-              <span>Ranked by inquiries over the last 7 days.</span>
+            <div className="trend-grid">
+              {trendingList.map((p, i) => (
+                <Link key={p.id} href={`/packages/${p.id}`} className="trend-card">
+                  <div className="trend-rank">{String(i+1).padStart(2,'0')}</div>
+                  <div className="trend-img" style={{ backgroundImage: `url(${p.img})` }}>
+                    <span className="trend-arrow"><Icon name="arrow-up-right" size={14}/></span>
+                  </div>
+                  <div className="trend-body">
+                    <div className="trend-meta">
+                      <span>{p.region} · {p.type}</span>
+                    </div>
+                    <h4>{p.title}</h4>
+                    <div className="trend-foot">
+                      <span className="trend-price"><span style={{fontFamily:'var(--sans)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:6}}>From</span>₹{p.price.toLocaleString()}</span>
+                      <span style={{fontFamily:'var(--mono)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase'}}>{p.duration} days</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
-          <div className="trend-grid">
-            {trendingList.map((p, i) => (
-              <Link key={p.id} href={`/packages/${p.id}`} className="trend-card">
-                <div className="trend-rank">{String(i+1).padStart(2,'0')}</div>
-                <div className="trend-img" style={{ backgroundImage: `url(${p.img})` }}>
-                  <span className="trend-arrow"><Icon name="arrow-up-right" size={14}/></span>
-                </div>
-                <div className="trend-body">
-                  <div className="trend-meta">
-                    <span>{p.region} · {p.type}</span>
-                    <span style={{color:'var(--clay)'}}>▲ {[42,28,18,11][i]}%</span>
-                  </div>
-                  <h4>{p.title}</h4>
-                  <div className="trend-foot">
-                    <span className="trend-price"><span style={{fontFamily:'var(--sans)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:6}}>From</span>${p.price.toLocaleString()}</span>
-                    <span style={{fontFamily:'var(--mono)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase'}}>{p.duration} days</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
- 
+        </section>
+      )}
+
       <section className="offers">
         <div className="container">
           <div className="section-head">
@@ -374,28 +409,30 @@ export default function Home() {
         </div>
       </section>
  
-      <section className="testi">
-        <div className="container">
-          <span className="eyebrow">— Travelers</span>
-          <div style={{marginTop:36}}>
-            <p className="testi-quote">
-              <span className="open">"</span>{(testimonials[testi] || TESTIMONIALS[0]).quote}
-            </p>
-            <div className="testi-attrib">
-              <div className="testi-avatar" style={{ backgroundImage: `url(${(testimonials[testi] || TESTIMONIALS[0]).avatar})`}}></div>
-              <div>
-                <div className="testi-name">{(testimonials[testi] || TESTIMONIALS[0]).name}</div>
-                <div className="testi-place">{(testimonials[testi] || TESTIMONIALS[0]).place}</div>
+      {testimonials.length > 0 && (
+        <section className="testi">
+          <div className="container">
+            <span className="eyebrow">— Travelers</span>
+            <div style={{marginTop:36}}>
+              <p className="testi-quote">
+                <span className="open">"</span>{testimonials[testi].quote}
+              </p>
+              <div className="testi-attrib">
+                <div className="testi-avatar" style={{ backgroundImage: `url(${testimonials[testi].avatar})`}}></div>
+                <div>
+                  <div className="testi-name">{testimonials[testi].name}</div>
+                  <div className="testi-place">{testimonials[testi].place}</div>
+                </div>
+              </div>
+              <div className="testi-nav">
+                {testimonials.map((_, i) =>
+                  <button key={i} className={'testi-dot ' + (i === testi ? 'active' : '')} onClick={() => setTesti(i)}></button>
+                )}
               </div>
             </div>
-            <div className="testi-nav">
-              {testimonials.map((_, i) =>
-                <button key={i} className={'testi-dot ' + (i === testi ? 'active' : '')} onClick={() => setTesti(i)}></button>
-              )}
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="news">
         <div className="container">
@@ -406,10 +443,22 @@ export default function Home() {
               <p>Once a month. Notes from our planners on the road, and one trip we think you'd like that hasn't filled yet.</p>
             </div>
             <div>
-              <form className="news-form" onSubmit={e => e.preventDefault()}>
-                <input type="email" placeholder="your.address@email.com"/>
-                <button type="submit">Subscribe <Icon name="arrow-right" size={14}/></button>
+              <form className="news-form" onSubmit={handleNewsletterSubmit}>
+                <input
+                  type="email"
+                  placeholder="your.address@email.com"
+                  value={newsletterEmail}
+                  onChange={e => setNewsletterEmail(e.target.value)}
+                  required
+                  disabled={newsletterStatus === 'loading'}
+                />
+                <button type="submit" disabled={newsletterStatus === 'loading'}>
+                  {newsletterStatus === 'loading' ? 'Subscribing…' : 'Subscribe'} <Icon name="arrow-right" size={14}/>
+                </button>
               </form>
+              {newsletterMessage && (
+                <p style={{marginTop:14, fontSize:12, opacity:0.85}}>{newsletterMessage}</p>
+              )}
               <p style={{marginTop:14, fontSize:12, opacity:0.55}}>No spam. Unsubscribe at the bottom of any letter.</p>
             </div>
           </div>

@@ -14,14 +14,11 @@ export const Footer: React.FC = () => {
             <h5>Travel</h5>
             <Link href="/packages">Packages</Link>
             <Link href="/destinations">Destinations</Link>
-            <Link href="/private-trips">Private trips</Link>
-            <Link href="/gift-cards">Gift cards</Link>
           </div>
           <div className="footer-col">
             <h5>Company</h5>
             <Link href="/about">Our story</Link>
-            <Link href="/journal">Field journal</Link>
-            <Link href="/press">Press</Link>
+            <Link href="/stories">Stories</Link>
             <Link href="/careers">Careers</Link>
           </div>
           <div className="footer-col">

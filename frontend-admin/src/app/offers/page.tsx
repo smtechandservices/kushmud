@@ -15,9 +15,10 @@ export default function OffersPage() {
     title: '',
     sub: '',
     code: '',
-    img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop',
+    img: '',
     accent: '#d4a853',
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
     try {
@@ -39,7 +40,7 @@ export default function OffersPage() {
       setShowModal(false);
       setNewOffer({
         id: '', tag: 'Early Bird', title: '', sub: '', code: '',
-        img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop',
+        img: '',
         accent: '#d4a853',
       });
       await loadData();
@@ -58,6 +59,17 @@ export default function OffersPage() {
     }
   };
 
+  const filteredOffers = offers.filter(o => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      o.title.toLowerCase().includes(q) ||
+      o.sub.toLowerCase().includes(q) ||
+      o.tag.toLowerCase().includes(q) ||
+      o.code.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="admin">
       <Sidebar />
@@ -65,7 +77,13 @@ export default function OffersPage() {
         <div className="admin-top">
           <div className="admin-search">
             <Icon name="search" size={14}/>
-            <span>Search offers…</span>
+            <input
+              type="text"
+              placeholder="Search offers…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
+            />
           </div>
           <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
             <Icon name="plus" size={13}/> New offer
@@ -91,6 +109,11 @@ export default function OffersPage() {
                 <Icon name="tag" size={32} style={{marginBottom: 16, color: 'var(--clay)'}} />
                 <p>No offers yet. Click "New offer" to create one.</p>
               </div>
+            ) : filteredOffers.length === 0 ? (
+              <div style={{padding: 64, textAlign: 'center', color: 'var(--muted)'}}>
+                <Icon name="search" size={32} style={{marginBottom: 16, color: 'var(--clay)'}} />
+                <p>No results match your search.</p>
+              </div>
             ) : (
               <table className="dtable">
                 <thead>
@@ -103,7 +126,7 @@ export default function OffersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {offers.map(o => (
+                  {filteredOffers.map(o => (
                     <tr key={o.id}>
                       <td>
                         <div style={{display:'flex', alignItems:'center', gap:12}}>

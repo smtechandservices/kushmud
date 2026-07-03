@@ -8,6 +8,7 @@ import { fetchBookings, updateBookingStatus, Booking } from '@/lib/data';
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
     try {
@@ -23,6 +24,17 @@ export default function BookingsPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const filteredBookings = bookings.filter(b => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      b.name.toLowerCase().includes(q) ||
+      b.pkg.toLowerCase().includes(q) ||
+      b.id.toLowerCase().includes(q) ||
+      b.status.toLowerCase().includes(q)
+    );
+  });
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
@@ -40,7 +52,12 @@ export default function BookingsPage() {
         <div className="admin-top">
           <div className="admin-search">
             <Icon name="search" size={14}/>
-            <span>Search bookings by customer, reference, or package…</span>
+            <input
+              type="text"
+              placeholder="Search bookings by customer, reference, or package…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
@@ -62,6 +79,7 @@ export default function BookingsPage() {
                   <tr>
                     <th>Reference</th>
                     <th>Customer</th>
+                    <th style={{textAlign:'center'}}>Pax</th>
                     <th>Package</th>
                     <th>Dates</th>
                     <th>Status</th>
@@ -69,15 +87,21 @@ export default function BookingsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map(b => (
+                  {filteredBookings.map(b => (
                     <tr key={b.id}>
                       <td><span style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink)'}}>{b.id}</span></td>
                       <td>
                         <div className="who">
                           <div className="ava" style={{ backgroundImage:`url(${b.avatar})` }}></div>
                           <span>{b.name}</span>
+                          {b.remarks && (
+                            <span title={b.remarks} style={{display:'inline-flex', color:'var(--muted)', cursor:'help'}}>
+                              <Icon name="book" size={12}/>
+                            </span>
+                          )}
                         </div>
                       </td>
+                      <td style={{textAlign:'center', color:'var(--ink-2)', fontFamily:'var(--mono)', fontSize:12}}>{b.pax ?? '—'}</td>
                       <td style={{color:'var(--ink-2)'}}>{b.pkg}</td>
                       <td style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink-2)'}}>{b.dates}</td>
                       <td>
@@ -103,12 +127,14 @@ export default function BookingsPage() {
                           )}
                         </div>
                       </td>
-                      <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>${b.total.toLocaleString()}</td>
+                      <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>₹{b.total.toLocaleString()}</td>
                     </tr>
                   ))}
-                  {bookings.length === 0 && (
+                  {filteredBookings.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No bookings found.</td>
+                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
+                        {bookings.length === 0 ? 'No bookings found.' : 'No bookings match your search.'}
+                      </td>
                     </tr>
                   )}
                 </tbody>

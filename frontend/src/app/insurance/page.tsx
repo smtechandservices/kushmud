@@ -15,7 +15,7 @@ export default function InsurancePage() {
       </div>
 
       <div className="container" style={{padding: '80px 40px 120px'}}>
-        <div style={{maxWidth: 800, margin: '0 auto'}}>
+        <div style={{margin: '0 auto'}}>
           <div style={{padding: '40px', background: 'var(--sand)', borderRadius: 4, marginBottom: 56, display: 'flex', gap: 24, alignItems: 'flex-start'}}>
             <Icon name="shield" size={32} style={{color: 'var(--forest)', flexShrink: 0, marginTop: 4}}/>
             <div>

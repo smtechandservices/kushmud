@@ -1,4 +1,24 @@
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.utils import timezone
+
+
+class Customer(AbstractBaseUser):
+    USERNAME_FIELD = 'email'
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=254, unique=True, null=True, blank=True)
+    phone = models.CharField(max_length=30, unique=True, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name or self.email or self.phone or f"Customer {self.pk}"
 
 class Package(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -18,9 +38,25 @@ class Package(models.Model):
     img = models.TextField()
     gallery = models.JSONField(default=list, blank=True)
     highlights = models.JSONField(default=list, blank=True)
+    itinerary = models.JSONField(default=list, blank=True)
+    group_size = models.CharField(max_length=50, null=True, blank=True)
+    best_months = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.title
+
+class PackageReview(models.Model):
+    package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='review_entries')
+    name = models.CharField(max_length=100)
+    quote = models.TextField()
+    rating = models.FloatField(default=5.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} on {self.package_id}"
 
 class Destination(models.Model):
     name = models.CharField(max_length=100, primary_key=True)
@@ -63,14 +99,61 @@ class Booking(models.Model):
     status = models.CharField(max_length=20, default="pending")  # confirmed, pending, cancelled
     email = models.EmailField(max_length=254, null=True, blank=True)
     phone = models.CharField(max_length=50, null=True, blank=True)
-    passport_country = models.CharField(max_length=100, null=True, blank=True)
-    dietary_notes = models.TextField(null=True, blank=True)
-    traveler_2_name = models.CharField(max_length=100, null=True, blank=True)
-    traveler_2_dob = models.CharField(max_length=50, null=True, blank=True)  # Keep as string for flexibility
+    pax = models.IntegerField(default=1)
+    remarks = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.id} - {self.name} - {self.pkg}"
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=300)
+    answer = models.TextField()
+    category = models.CharField(max_length=100, null=True, blank=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.question
+
+class Story(models.Model):
+    title = models.CharField(max_length=200)
+    excerpt = models.TextField()
+    body = models.TextField(null=True, blank=True)
+    img = models.TextField()
+    author = models.CharField(max_length=100, null=True, blank=True)
+    tag = models.CharField(max_length=100, null=True, blank=True)
+    published_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-published_at']
+
+    def __str__(self):
+        return self.title
+
+class JobOpening(models.Model):
+    title = models.CharField(max_length=200)
+    location = models.CharField(max_length=200)
+    type = models.CharField(max_length=50, default="Full-time")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.title
+
+class NewsletterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-subscribed_at']
+
+    def __str__(self):
+        return self.email
 
 class ContactInquiry(models.Model):
     first_name = models.CharField(max_length=100)

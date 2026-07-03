@@ -4,7 +4,7 @@ import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
-import { PACKAGES, fetchPackages, Package } from '@/lib/data';
+import { fetchPackages, Package } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 import filtersData from '@/assets/packages-filters.json';
 
@@ -23,18 +23,10 @@ function durationMatches(d: number, bucket: string) {
 
 function ListingContent() {
   const searchParams = useSearchParams();
-  const [packages, setPackages] = useState<Package[]>(PACKAGES);
+  const [packages, setPackages] = useState<Package[]>([]);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const pkgs = await fetchPackages();
-        if (pkgs && pkgs.length > 0) setPackages(pkgs);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    load();
+    fetchPackages().then(setPackages).catch(console.error);
   }, []);
 
   const [typeFilters, setTypeFilters] = useState<Set<string>>(() => {
@@ -110,7 +102,7 @@ function ListingContent() {
     ...[...regionFilters].map(r   => ({ label: r,            remove: () => toggle('region', r) })),
     ...[...durationFilters].map(d => ({ label: d,            remove: () => toggle('duration', d) })),
     ...[...activeMonths].map(i    => ({ label: months[i],    remove: () => toggle('month', i) })),
-    ...(priceMax < PRICE_MAX      ? [{ label: `Up to $${priceMax.toLocaleString()}`, remove: () => { setPriceMax(PRICE_MAX); setPage(1); } }] : []),
+    ...(priceMax < PRICE_MAX      ? [{ label: `Up to ₹${priceMax.toLocaleString()}`, remove: () => { setPriceMax(PRICE_MAX); setPage(1); } }] : []),
   ];
 
   return (
@@ -188,9 +180,9 @@ function ListingContent() {
                   style={{ width: '100%', accentColor: 'var(--clay)' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--mono)', marginTop: 6 }}>
-                  <span>$500</span>
+                  <span>₹500</span>
                   <span style={{ color: priceMax < PRICE_MAX ? 'var(--clay)' : 'var(--muted)' }}>
-                    Up to ${priceMax.toLocaleString()}
+                    Up to ₹{priceMax.toLocaleString()}
                   </span>
                 </div>
               </div>

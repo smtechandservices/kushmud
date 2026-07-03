@@ -3,42 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
-import { 
-  PACKAGES, BOOKINGS, 
-  fetchStats, fetchBookings, createPackage, updateBookingStatus,
-  Package, Booking 
+import {
+  fetchStats, fetchBookings, fetchMe, createPackage, updateBookingStatus,
+  Booking, AdminUser
 } from '@/lib/data';
-import chartData from '@/assets/admin-chart.json';
 import { Sidebar } from '@/components/Sidebar';
 
-function Spark({ color = '#1f7a4d', inverse = false }) {
-  const points = inverse
-    ? [10, 8, 14, 11, 16, 13, 9, 12, 7, 10, 6, 8]
-    : [4, 7, 5, 9, 6, 11, 8, 14, 10, 16, 13, 18];
-  const max = 20;
-  const w = 220, h = 32;
-  const step = w / (points.length - 1);
-  const path = points.map((p, i) => {
-    const x = i * step;
-    const y = h - (p / max) * h;
-    return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
-  }).join(' ');
-  const area = path + ` L${w},${h} L0,${h} Z`;
-  return (
-    <svg className="spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" width="100%" height={32}>
-      <path d={area} fill={color} opacity={0.12}/>
-      <path d={path} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
-
 interface BookingChartProps {
-  monthly?: number[];
-  labels?: string[];
+  monthly: number[];
+  labels: string[];
 }
 
-function BookingChart({ monthly = chartData.monthly, labels = chartData.labels }: BookingChartProps) {
-  const max = 160;
+function BookingChart({ monthly, labels }: BookingChartProps) {
+  const max = Math.max(1, ...monthly);
   const w = 800, h = 220;
   const step = w / (monthly.length - 1);
   const path = monthly.map((v, i) => {
@@ -70,10 +47,12 @@ function BookingChart({ monthly = chartData.monthly, labels = chartData.labels }
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
-  const [bookings, setBookings] = useState<Booking[]>(BOOKINGS);
-  const [packages, setPackages] = useState<Package[]>(PACKAGES);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [me, setMe] = useState<AdminUser | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [today, setToday] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [newPkg, setNewPkg] = useState({
     id: '',
@@ -86,12 +65,9 @@ export default function AdminDashboard() {
     price: 1500,
     priceWas: undefined as number | undefined,
     blurb: '',
-    img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&auto=format&fit=crop',
-    gallery: [
-      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop'
-    ],
-    highlights: ['Heritage tour', 'Private transport', 'Selected luxury stays']
+    img: '',
+    gallery: [] as string[],
+    highlights: [] as string[]
   });
 
   const loadData = async () => {
@@ -99,14 +75,12 @@ export default function AdminDashboard() {
       const freshStats = await fetchStats();
       setStats(freshStats);
     } catch (e) {
-      console.error('Failed to load live stats, using mock settings.', e);
+      console.error('Failed to load live stats', e);
     }
 
     try {
       const freshBookings = await fetchBookings();
-      if (freshBookings && freshBookings.length > 0) {
-        setBookings(freshBookings);
-      }
+      setBookings(freshBookings);
     } catch (e) {
       console.error(e);
     }
@@ -116,6 +90,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
+    fetchMe().then(setMe).catch(() => {});
+    setToday(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
   }, []);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -145,12 +121,9 @@ export default function AdminDashboard() {
         price: 1500,
         priceWas: undefined,
         blurb: '',
-        img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&auto=format&fit=crop',
-        gallery: [
-          'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop'
-        ],
-        highlights: ['Heritage tour', 'Private transport', 'Selected luxury stays']
+        img: '',
+        gallery: [],
+        highlights: []
       });
       await loadData();
       alert('Package created successfully!');
@@ -160,22 +133,20 @@ export default function AdminDashboard() {
     }
   };
 
-  // Default fallback KPIs
-  const kpis = stats?.kpis || {
-    total_bookings: bookings.length,
-    revenue_mtd: '$284k',
-    pending_inquiries: bookings.filter(b => b.status === 'pending').length,
-    avg_rating: 4.87
-  };
+  const kpis = stats?.kpis ?? null;
+  const topPackagesList: any[] = stats?.top_packages ?? [];
+  const greetingName = me ? (me.first_name || me.username) : '';
 
-  // Top packages defaults or dynamic
-  const topPackagesList = stats?.top_packages || PACKAGES.slice(0, 5).map((p, i) => ({
-    id: p.id,
-    title: p.title,
-    img: p.img,
-    price: p.price,
-    bookings: Math.floor(40 - i * 6)
-  }));
+  const filteredBookings = (() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return bookings;
+    return bookings.filter(b =>
+      b.name.toLowerCase().includes(q) ||
+      b.pkg.toLowerCase().includes(q) ||
+      b.id.toLowerCase().includes(q) ||
+      b.status.toLowerCase().includes(q)
+    );
+  })();
 
   return (
     <div className="admin">
@@ -185,7 +156,13 @@ export default function AdminDashboard() {
         <div className="admin-top">
           <div className="admin-search">
             <Icon name="search" size={14}/>
-            <span>Search bookings, packages, customers…</span>
+            <input
+              type="text"
+              placeholder="Search bookings, packages, customers…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', flex:1, width:'100%'}}
+            />
             <span style={{marginLeft:'auto', fontFamily:'var(--mono)', fontSize:10, padding:'2px 6px', background:'white', border:'1px solid var(--line)', borderRadius:3}}>⌘ K</span>
           </div>
           <div style={{display:'flex', gap:10, alignItems:'center'}}>
@@ -199,11 +176,10 @@ export default function AdminDashboard() {
         <div className="admin-content">
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:24}}>
             <div>
-              <h2>Good morning, Naomi.</h2>
-              <p className="sub" style={{margin:'6px 0 0'}}>Today is Tuesday, 6 May. Spring season is 76% booked.</p>
+              <h2>{greetingName ? `Good morning, ${greetingName}.` : 'Good morning.'}</h2>
+              {today && <p className="sub" style={{margin:'6px 0 0'}}>Today is {today}.</p>}
             </div>
             <div style={{display:'flex', gap:8}}>
-              <button className="btn btn-ghost btn-sm">Last 30 days <Icon name="arrow-right" size={11} stroke={2}/></button>
               <button className="btn btn-ghost btn-sm" onClick={loadData}>Refresh</button>
             </div>
           </div>
@@ -211,27 +187,19 @@ export default function AdminDashboard() {
           <div className="kpis">
             <div className="kpi">
               <div className="lbl">Total bookings</div>
-              <div className="v">{kpis.total_bookings}</div>
-              <div className="delta up">▲ 12.4% vs. last month</div>
-              <Spark color="#1f7a4d"/>
+              <div className="v">{kpis ? kpis.total_bookings : '—'}</div>
             </div>
             <div className="kpi">
               <div className="lbl">Revenue (MTD)</div>
-              <div className="v">{kpis.revenue_mtd}</div>
-              <div className="delta up">▲ 8.1% vs. last month</div>
-              <Spark color="#1f3b30"/>
+              <div className="v">{kpis ? kpis.revenue_mtd : '—'}</div>
             </div>
             <div className="kpi">
               <div className="lbl">Pending inquiries</div>
-              <div className="v">{kpis.pending_inquiries}</div>
-              <div className="delta down">▼ 3 since yesterday</div>
-              <Spark color="#c79a4a" inverse/>
+              <div className="v">{kpis ? kpis.pending_inquiries : '—'}</div>
             </div>
             <div className="kpi">
               <div className="lbl">Avg. trip rating</div>
-              <div className="v">{kpis.avg_rating}</div>
-              <div className="delta up">▲ 0.04</div>
-              <Spark color="#1f3b30"/>
+              <div className="v">{kpis ? kpis.avg_rating : '—'}</div>
             </div>
           </div>
 
@@ -239,31 +207,33 @@ export default function AdminDashboard() {
             <div className="panel">
               <div className="panel-head">
                 <h4>Booking trend</h4>
-                <div style={{display:'flex', gap:6, fontFamily:'var(--mono)', fontSize:11, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--muted)'}}>
-                  <span style={{color:'var(--ink)', borderBottom:'1px solid var(--ink)', paddingBottom:2}}>30d</span>
-                  <span>·</span><span>90d</span>
-                  <span>·</span><span>1y</span>
-                </div>
+                <span style={{fontFamily:'var(--mono)', fontSize:11, color:'var(--muted)', letterSpacing:'0.06em', textTransform:'uppercase'}}>Last 6 months</span>
               </div>
               <div className="panel-body" style={{paddingBottom:18}}>
-                <BookingChart monthly={stats?.chart?.monthly} labels={stats?.chart?.labels} />
+                {stats?.chart ? (
+                  <BookingChart monthly={stats.chart.monthly} labels={stats.chart.labels} />
+                ) : (
+                  <div style={{padding: 32, textAlign: 'center', color: 'var(--muted)'}}>Loading…</div>
+                )}
               </div>
             </div>
 
             <div className="panel">
               <div className="panel-head">
                 <h4>Top packages</h4>
-                <span style={{fontFamily:'var(--mono)', fontSize:11, color:'var(--muted)', letterSpacing:'0.06em', textTransform:'uppercase'}}>This month</span>
+                <span style={{fontFamily:'var(--mono)', fontSize:11, color:'var(--muted)', letterSpacing:'0.06em', textTransform:'uppercase'}}>By bookings</span>
               </div>
               <div className="panel-body" style={{padding:0}}>
-                {topPackagesList.map((p: any, i: number) => (
+                {topPackagesList.length === 0 ? (
+                  <div style={{padding: 32, textAlign: 'center', color: 'var(--muted)'}}>No packages yet.</div>
+                ) : topPackagesList.map((p: any, i: number) => (
                   <div key={p.id} style={{display:'flex', alignItems:'center', gap:14, padding:'14px 22px', borderBottom: i < topPackagesList.length - 1 ? '1px solid var(--line)' : 0}}>
                     <div style={{width:48, height:48, borderRadius:2, backgroundImage:`url(${p.img})`, backgroundSize:'cover', backgroundPosition:'center', flexShrink:0}}></div>
                     <div style={{flex:1, minWidth:0}}>
                       <div style={{fontSize:13.5, fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{p.title}</div>
                       <div style={{fontSize:11, color:'var(--muted)', fontFamily:'var(--mono)', letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>{p.bookings} bookings</div>
                     </div>
-                    <div style={{fontFamily:'var(--serif)', fontSize:16, letterSpacing:'-0.01em'}}>${p.price.toLocaleString()}</div>
+                    <div style={{fontFamily:'var(--serif)', fontSize:16, letterSpacing:'-0.01em'}}>₹{p.price.toLocaleString()}</div>
                   </div>
                 ))}
               </div>
@@ -276,10 +246,6 @@ export default function AdminDashboard() {
             <div className="panel-head">
               <h4>Recent bookings</h4>
               <div style={{display:'flex', gap:8, alignItems:'center'}}>
-                <div className="admin-search" style={{width:240, padding:'6px 12px', fontSize:12}}>
-                  <Icon name="search" size={12}/><span>Filter…</span>
-                </div>
-                <button className="btn btn-ghost btn-sm"><Icon name="filter" size={12}/> Filter</button>
                 <button className="btn btn-ghost btn-sm" onClick={loadData}>View all →</button>
               </div>
             </div>
@@ -297,7 +263,11 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map(b => (
+                {filteredBookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{textAlign:'center', color:'var(--muted)', padding:24}}>No bookings match your search.</td>
+                  </tr>
+                ) : filteredBookings.map(b => (
                   <tr key={b.id}>
                     <td><input type="checkbox" style={{margin:0}} readOnly/></td>
                     <td><span style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink)'}}>{b.id}</span></td>
@@ -332,7 +302,7 @@ export default function AdminDashboard() {
                         )}
                       </div>
                     </td>
-                    <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>${b.total.toLocaleString()}</td>
+                    <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>₹{b.total.toLocaleString()}</td>
                     <td style={{textAlign:'right', color:'var(--muted)'}}>···</td>
                   </tr>
                 ))}
@@ -414,7 +384,7 @@ export default function AdminDashboard() {
               </div>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
-                  <label>Price per person ($)</label>
+                  <label>Price per person (₹)</label>
                   <input required type="number" value={newPkg.price} onChange={e => setNewPkg({...newPkg, price: parseInt(e.target.value) || 0})}/>
                 </div>
                 <div className="field-group">

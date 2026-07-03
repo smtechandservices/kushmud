@@ -1,11 +1,10 @@
-// data.ts — Wayfare package data and shared assets
+// data.ts — Wayfare API client and shared types
 
-import packagesData from '@/assets/packages.json';
-import destinationsData from '@/assets/destinations.json';
-import offersData from '@/assets/offers.json';
-import testimonialsData from '@/assets/testimonials.json';
-import itineraryData from '@/assets/itinerary-rajasthan.json';
-import bookingsData from '@/assets/bookings.json';
+export interface ItineraryDay {
+  title: string;
+  body: string;
+  activities: string[];
+}
 
 export interface Package {
   id: string;
@@ -25,6 +24,18 @@ export interface Package {
   img: string;
   gallery?: string[];
   highlights: string[];
+  itinerary?: ItineraryDay[];
+  group_size?: string | null;
+  best_months?: string | null;
+}
+
+export interface PackageReview {
+  id: number;
+  package: string;
+  name: string;
+  quote: string;
+  rating: number;
+  created_at: string;
 }
 
 export interface Destination {
@@ -60,20 +71,61 @@ export interface Booking {
   dates: string;
   total: number;
   status: 'confirmed' | 'pending' | 'cancelled';
+  email?: string | null;
+  phone?: string | null;
+  pax?: number;
+  remarks?: string | null;
 }
 
-export interface ItineraryDay {
+export interface FAQ {
+  id: number;
+  question: string;
+  answer: string;
+  category?: string | null;
+  order: number;
+}
+
+export interface Story {
+  id: number;
   title: string;
-  body: string;
-  activities: string[];
+  excerpt: string;
+  body?: string | null;
+  img: string;
+  author?: string | null;
+  tag?: string | null;
+  published_at: string;
 }
 
-export const PACKAGES: Package[] = packagesData as Package[];
-export const DESTINATIONS: Destination[] = destinationsData as Destination[];
-export const OFFERS: Offer[] = offersData as Offer[];
-export const TESTIMONIALS: Testimonial[] = testimonialsData as Testimonial[];
-export const ITINERARY_RAJASTHAN: ItineraryDay[] = itineraryData as ItineraryDay[];
-export const BOOKINGS: Booking[] = bookingsData as Booking[];
+export interface JobOpening {
+  id: number;
+  title: string;
+  location: string;
+  type: string;
+  order: number;
+}
+
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  subscribed_at: string;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+export interface RegisteredCustomer {
+  id: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  is_active: boolean;
+  created_at: string;
+}
 
 export const getApiUrl = (path: string) => {
   const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -129,26 +181,44 @@ export async function fetchStats(): Promise<any> {
   return await res.json();
 }
 
-export async function fetchPackages(): Promise<Package[]> {
-  try {
-    const res = await authFetch(getApiUrl('/api/packages/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local packages data', e);
-    return PACKAGES;
+export async function fetchMe(): Promise<AdminUser> {
+  const res = await authFetch(getApiUrl('/api/me/'));
+  if (!res.ok) throw new Error('Failed to fetch current user');
+  return await res.json();
+}
+
+export async function updateMe(data: Partial<Pick<AdminUser, 'first_name' | 'last_name' | 'email'>>): Promise<AdminUser> {
+  const res = await authFetch(getApiUrl('/api/me/'), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update profile');
+  return await res.json();
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  const res = await authFetch(getApiUrl('/api/me/password/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || 'Failed to change password');
   }
 }
 
+export async function fetchPackages(): Promise<Package[]> {
+  const res = await authFetch(getApiUrl('/api/packages/'));
+  if (!res.ok) throw new Error('Failed to fetch packages');
+  return await res.json();
+}
+
 export async function fetchBookings(): Promise<Booking[]> {
-  try {
-    const res = await authFetch(getApiUrl('/api/bookings/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local bookings data', e);
-    return BOOKINGS;
-  }
+  const res = await authFetch(getApiUrl('/api/bookings/'));
+  if (!res.ok) throw new Error('Failed to fetch bookings');
+  return await res.json();
 }
 
 export async function createPackage(packageData: any): Promise<Package> {
@@ -178,6 +248,30 @@ export async function deletePackage(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete package');
 }
 
+// ── Package Reviews ──
+export async function fetchPackageReviews(packageId: string): Promise<PackageReview[]> {
+  const res = await authFetch(getApiUrl(`/api/package-reviews/?package=${encodeURIComponent(packageId)}`));
+  if (!res.ok) throw new Error('Failed to fetch reviews');
+  return await res.json();
+}
+
+export async function createPackageReview(data: { package: string; name: string; quote: string; rating: number }): Promise<PackageReview> {
+  const res = await authFetch(getApiUrl('/api/package-reviews/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create review');
+  return await res.json();
+}
+
+export async function deletePackageReview(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/package-reviews/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete review');
+}
+
 export async function updateBookingStatus(id: string, status: string): Promise<Booking> {
   const res = await authFetch(getApiUrl(`/api/bookings/${id}/`), {
     method: 'PATCH',
@@ -190,14 +284,9 @@ export async function updateBookingStatus(id: string, status: string): Promise<B
 
 // ── Offers ──
 export async function fetchOffers(): Promise<Offer[]> {
-  try {
-    const res = await authFetch(getApiUrl('/api/offers/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local offers data', e);
-    return OFFERS;
-  }
+  const res = await authFetch(getApiUrl('/api/offers/'));
+  if (!res.ok) throw new Error('Failed to fetch offers');
+  return await res.json();
 }
 
 export async function createOffer(offerData: any): Promise<Offer> {
@@ -219,14 +308,9 @@ export async function deleteOffer(id: string): Promise<void> {
 
 // ── Destinations ──
 export async function fetchDestinations(): Promise<Destination[]> {
-  try {
-    const res = await authFetch(getApiUrl('/api/destinations/'));
-    if (!res.ok) throw new Error('API failed');
-    return await res.json();
-  } catch (e) {
-    console.warn('Fallback to local destinations data', e);
-    return DESTINATIONS;
-  }
+  const res = await authFetch(getApiUrl('/api/destinations/'));
+  if (!res.ok) throw new Error('Failed to fetch destinations');
+  return await res.json();
 }
 
 export async function createDestination(data: any): Promise<Destination> {
@@ -251,4 +335,168 @@ export async function fetchInquiries(): Promise<any[]> {
   const res = await authFetch(getApiUrl('/api/inquiries/'));
   if (!res.ok) throw new Error('Failed to fetch inquiries');
   return await res.json();
+}
+
+// ── Testimonials ──
+export async function fetchTestimonials(): Promise<Testimonial[]> {
+  const res = await authFetch(getApiUrl('/api/testimonials/'));
+  if (!res.ok) throw new Error('Failed to fetch testimonials');
+  return await res.json();
+}
+
+export async function createTestimonial(data: any): Promise<Testimonial> {
+  const res = await authFetch(getApiUrl('/api/testimonials/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create testimonial');
+  return await res.json();
+}
+
+export async function deleteTestimonial(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/testimonials/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete testimonial');
+}
+
+// ── FAQs ──
+export async function fetchFaqs(): Promise<FAQ[]> {
+  const res = await authFetch(getApiUrl('/api/faqs/'));
+  if (!res.ok) throw new Error('Failed to fetch FAQs');
+  return await res.json();
+}
+
+export async function createFaq(data: any): Promise<FAQ> {
+  const res = await authFetch(getApiUrl('/api/faqs/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create FAQ');
+  return await res.json();
+}
+
+export async function updateFaq(id: number, data: Partial<FAQ>): Promise<FAQ> {
+  const res = await authFetch(getApiUrl(`/api/faqs/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update FAQ');
+  return await res.json();
+}
+
+export async function deleteFaq(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/faqs/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete FAQ');
+}
+
+// ── Job Openings ──
+export async function fetchJobOpenings(): Promise<JobOpening[]> {
+  const res = await authFetch(getApiUrl('/api/job-openings/'));
+  if (!res.ok) throw new Error('Failed to fetch job openings');
+  return await res.json();
+}
+
+export async function createJobOpening(data: any): Promise<JobOpening> {
+  const res = await authFetch(getApiUrl('/api/job-openings/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create job opening');
+  return await res.json();
+}
+
+export async function updateJobOpening(id: number, data: Partial<JobOpening>): Promise<JobOpening> {
+  const res = await authFetch(getApiUrl(`/api/job-openings/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update job opening');
+  return await res.json();
+}
+
+export async function deleteJobOpening(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/job-openings/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete job opening');
+}
+
+// ── Stories ──
+export async function fetchStories(): Promise<Story[]> {
+  const res = await authFetch(getApiUrl('/api/stories/'));
+  if (!res.ok) throw new Error('Failed to fetch stories');
+  return await res.json();
+}
+
+export async function createStory(data: any): Promise<Story> {
+  const res = await authFetch(getApiUrl('/api/stories/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create story');
+  return await res.json();
+}
+
+export async function updateStory(id: number, data: Partial<Story>): Promise<Story> {
+  const res = await authFetch(getApiUrl(`/api/stories/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update story');
+  return await res.json();
+}
+
+export async function deleteStory(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/stories/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete story');
+}
+
+// ── Newsletter Subscribers ──
+export async function fetchNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+  const res = await authFetch(getApiUrl('/api/newsletter-subscribers/'));
+  if (!res.ok) throw new Error('Failed to fetch newsletter subscribers');
+  return await res.json();
+}
+
+export async function deleteNewsletterSubscriber(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/newsletter-subscribers/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete subscriber');
+}
+
+// ── Registered Customer Accounts ──
+export async function fetchRegisteredCustomers(): Promise<RegisteredCustomer[]> {
+  const res = await authFetch(getApiUrl('/api/customers/'));
+  if (!res.ok) throw new Error('Failed to fetch customers');
+  return await res.json();
+}
+
+export async function updateRegisteredCustomer(id: number, data: Partial<Pick<RegisteredCustomer, 'name' | 'email' | 'phone' | 'is_active'>>): Promise<RegisteredCustomer> {
+  const res = await authFetch(getApiUrl(`/api/customers/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update customer');
+  return await res.json();
+}
+
+export async function deleteRegisteredCustomer(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/customers/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete customer');
 }

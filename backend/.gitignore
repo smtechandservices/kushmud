@@ -37,3 +37,6 @@ static_root/
 # OS
 .DS_Store
 Thumbs.db
+
+# migrations
+*/migrations/

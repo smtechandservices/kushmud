@@ -1,12 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { DESTINATIONS } from '@/lib/data';
+import { fetchDestinations, Destination } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
 
 export default function DestinationsPage() {
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+
+  useEffect(() => {
+    fetchDestinations().then(setDestinations).catch(console.error);
+  }, []);
+
   return (
     <MainLayout>
       <div className="page-head">
@@ -19,7 +25,7 @@ export default function DestinationsPage() {
 
       <div className="container" style={{padding: '64px 40px 96px'}}>
         <div className="dest-grid">
-          {DESTINATIONS.map((d, i) => (
+          {destinations.map((d, i) => (
             <Link key={i} href="/packages" className={'dest-card ' + (d.size || '')}
                  style={{ backgroundImage: `url(${d.img})`, gridRow: d.size === 'lg' ? 'span 2' : undefined }}>
               <div className="dest-content">

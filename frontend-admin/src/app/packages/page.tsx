@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
-import { fetchPackages, deletePackage, updatePackage, Package } from '@/lib/data';
+import {
+  fetchPackages, createPackage, deletePackage, updatePackage, Package, ItineraryDay,
+  fetchPackageReviews, createPackageReview, deletePackageReview, PackageReview
+} from '@/lib/data';
 
 type EditForm = {
   title: string;
@@ -20,6 +23,44 @@ type EditForm = {
   badge: string;
   blurb: string;
   img: string;
+  highlights: string[];
+  itinerary: ItineraryDay[];
+};
+
+type NewPkgForm = {
+  id: string;
+  title: string;
+  destination: string;
+  region: string;
+  type: string;
+  duration: number;
+  nights: number;
+  price: number;
+  priceWas: number | undefined;
+  blurb: string;
+  img: string;
+  gallery: string[];
+  highlights: string[];
+  rating: number;
+  reviews: number;
+};
+
+const emptyNewPkg: NewPkgForm = {
+  id: '',
+  title: '',
+  destination: '',
+  region: 'India',
+  type: 'Cultural',
+  duration: 5,
+  nights: 4,
+  price: 1500,
+  priceWas: undefined,
+  blurb: '',
+  img: '',
+  gallery: [],
+  highlights: [],
+  rating: 5,
+  reviews: 0,
 };
 
 function toForm(p: Package): EditForm {
@@ -38,6 +79,8 @@ function toForm(p: Package): EditForm {
     badge: p.badge ?? '',
     blurb: p.blurb,
     img: p.img,
+    highlights: p.highlights ? [...p.highlights] : [],
+    itinerary: p.itinerary ? p.itinerary.map(d => ({ title: d.title, body: d.body, activities: [...d.activities] })) : [],
   };
 }
 
@@ -48,6 +91,11 @@ export default function PackagesPage() {
   const [form, setForm] = useState<EditForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPkg, setNewPkg] = useState<NewPkgForm>(emptyNewPkg);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const loadData = async () => {
     try {
@@ -78,12 +126,16 @@ export default function PackagesPage() {
     setEditing(p);
     setForm(toForm(p));
     setSaveError('');
+    setReviews([]);
+    setNewReview({ name: '', quote: '', rating: 5 });
+    loadReviews(p.id);
   };
 
   const closeEdit = () => {
     setEditing(null);
     setForm(null);
     setSaveError('');
+    setReviews([]);
   };
 
   const handleSave = async () => {
@@ -106,6 +158,8 @@ export default function PackagesPage() {
         badge: form.badge || undefined,
         blurb: form.blurb,
         img: form.img,
+        highlights: form.highlights.filter(h => h.trim()),
+        itinerary: form.itinerary,
       });
       await loadData();
       closeEdit();
@@ -120,6 +174,137 @@ export default function PackagesPage() {
     setForm(f => f ? { ...f, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value } : f);
   };
 
+  // ── Highlights ("what's included") ──
+  const addHighlight = () => setForm(f => f ? { ...f, highlights: [...f.highlights, ''] } : f);
+  const updateHighlight = (i: number, value: string) => setForm(f => f ? { ...f, highlights: f.highlights.map((h, idx) => idx === i ? value : h) } : f);
+  const removeHighlight = (i: number) => setForm(f => f ? { ...f, highlights: f.highlights.filter((_, idx) => idx !== i) } : f);
+
+  // ── Itinerary (day by day) ──
+  const addItineraryDay = () => setForm(f => f ? { ...f, itinerary: [...f.itinerary, { title: '', body: '', activities: [] }] } : f);
+  const updateItineraryDay = (i: number, patch: Partial<ItineraryDay>) => setForm(f => f ? {
+    ...f, itinerary: f.itinerary.map((d, idx) => idx === i ? { ...d, ...patch } : d)
+  } : f);
+  const removeItineraryDay = (i: number) => setForm(f => f ? { ...f, itinerary: f.itinerary.filter((_, idx) => idx !== i) } : f);
+
+  // ── Reviews ──
+  const [reviews, setReviews] = useState<PackageReview[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [newReview, setNewReview] = useState({ name: '', quote: '', rating: 5 });
+  const [addingReview, setAddingReview] = useState(false);
+
+  const loadReviews = async (packageId: string) => {
+    setLoadingReviews(true);
+    try {
+      const data = await fetchPackageReviews(packageId);
+      setReviews(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  const handleAddReview = async () => {
+    if (!editing || !newReview.name.trim() || !newReview.quote.trim()) return;
+    setAddingReview(true);
+    try {
+      await createPackageReview({ package: editing.id, name: newReview.name.trim(), quote: newReview.quote.trim(), rating: newReview.rating });
+      setNewReview({ name: '', quote: '', rating: 5 });
+      await loadReviews(editing.id);
+    } catch (e) {
+      alert('Failed to add review');
+    } finally {
+      setAddingReview(false);
+    }
+  };
+
+  const handleDeleteReview = async (id: number) => {
+    if (!editing) return;
+    if (!confirm('Delete this review?')) return;
+    try {
+      await deletePackageReview(id);
+      await loadReviews(editing.id);
+    } catch (e) {
+      alert('Failed to delete review');
+    }
+  };
+
+  // ── Gallery images ("+N Photos" on the customer site) ──
+  const [managingImages, setManagingImages] = useState<Package | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [savingImages, setSavingImages] = useState(false);
+  const [imagesError, setImagesError] = useState('');
+
+  const openImages = (p: Package) => {
+    setManagingImages(p);
+    setGalleryUrls(p.gallery ? [...p.gallery] : []);
+    setImagesError('');
+  };
+
+  const closeImages = () => {
+    setManagingImages(null);
+    setGalleryUrls([]);
+    setImagesError('');
+  };
+
+  const addImageUrl = () => setGalleryUrls(u => [...u, '']);
+  const updateImageUrl = (i: number, value: string) => setGalleryUrls(u => u.map((url, idx) => idx === i ? value : url));
+  const removeImageUrl = (i: number) => setGalleryUrls(u => u.filter((_, idx) => idx !== i));
+
+  const handleSaveImages = async () => {
+    if (!managingImages) return;
+    setSavingImages(true);
+    setImagesError('');
+    try {
+      await updatePackage(managingImages.id, { gallery: galleryUrls.map(u => u.trim()).filter(Boolean) });
+      await loadData();
+      closeImages();
+    } catch (e) {
+      setImagesError('Failed to save images. Please try again.');
+    } finally {
+      setSavingImages(false);
+    }
+  };
+
+  const openCreate = () => {
+    setNewPkg(emptyNewPkg);
+    setCreateError('');
+    setShowCreateModal(true);
+  };
+
+  const closeCreate = () => {
+    setShowCreateModal(false);
+    setCreateError('');
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError('');
+    try {
+      await createPackage(newPkg);
+      setShowCreateModal(false);
+      setNewPkg(emptyNewPkg);
+      await loadData();
+    } catch (e) {
+      console.error(e);
+      setCreateError('Failed to create package. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const filteredPackages = packages.filter(p => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      p.title.toLowerCase().includes(q) ||
+      p.destination.toLowerCase().includes(q) ||
+      p.type.toLowerCase().includes(q) ||
+      p.id.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="admin">
       <Sidebar />
@@ -127,9 +312,15 @@ export default function PackagesPage() {
         <div className="admin-top">
           <div className="admin-search">
             <Icon name="search" size={14}/>
-            <span>Search packages…</span>
+            <input
+              type="text"
+              placeholder="Search packages…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
+            />
           </div>
-          <button className="btn btn-primary btn-sm">
+          <button className="btn btn-primary btn-sm" onClick={openCreate}>
             <Icon name="plus" size={13}/> New package
           </button>
         </div>
@@ -155,11 +346,12 @@ export default function PackagesPage() {
                     <th>Type</th>
                     <th>Duration</th>
                     <th>Price</th>
+                    <th style={{textAlign:'center'}}>Featured</th>
                     <th style={{textAlign:'right'}}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {packages.map(p => (
+                  {filteredPackages.map(p => (
                     <tr key={p.id}>
                       <td>
                         <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
@@ -170,10 +362,20 @@ export default function PackagesPage() {
                       <td style={{color:'var(--ink-2)'}}>{p.destination}</td>
                       <td>{p.type}</td>
                       <td>{p.duration} days</td>
-                      <td style={{fontFamily:'var(--serif)', fontSize:15}}>${p.price.toLocaleString()}</td>
+                      <td style={{fontFamily:'var(--serif)', fontSize:15}}>₹{p.price.toLocaleString()}</td>
+                      <td style={{textAlign:'center'}}>
+                        {p.featured ? (
+                          <Icon name="check" size={14} stroke={2.5} style={{color:'var(--forest)'}} />
+                        ) : (
+                          <Icon name="x" size={14} stroke={2.5} style={{color:'var(--muted)'}} />
+                        )}
+                      </td>
                       <td style={{textAlign:'right'}}>
                         <div style={{display:'inline-flex', gap:6}}>
                           <button className="btn btn-sm btn-ghost" style={{padding: '4px 10px'}} onClick={() => openEdit(p)}>Edit</button>
+                          <button className="btn btn-sm btn-ghost" style={{padding: '4px 10px'}} onClick={() => openImages(p)}>
+                            Images {p.gallery && p.gallery.length > 0 ? `(${p.gallery.length})` : ''}
+                          </button>
                           <button className="btn btn-sm btn-ghost" style={{padding: '4px 8px', color:'var(--muted)'}} onClick={() => handleDelete(p.id)}>Delete</button>
                         </div>
                       </td>
@@ -181,7 +383,12 @@ export default function PackagesPage() {
                   ))}
                   {packages.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No packages found.</td>
+                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No packages found.</td>
+                    </tr>
+                  )}
+                  {packages.length > 0 && filteredPackages.length === 0 && (
+                    <tr>
+                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No packages match your search.</td>
                     </tr>
                   )}
                 </tbody>
@@ -248,10 +455,10 @@ export default function PackagesPage() {
               </div>
 
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
-                <Field label="Price ($)">
+                <Field label="Price (₹)">
                   <input type="number" min={0} value={form.price} onChange={set('price')} />
                 </Field>
-                <Field label="Was price ($)">
+                <Field label="Was price (₹)">
                   <input type="number" min={0} value={form.priceWas} onChange={set('priceWas')} placeholder="Optional" />
                 </Field>
               </div>
@@ -290,6 +497,156 @@ export default function PackagesPage() {
                 />
                 Featured package
               </label>
+              <p style={{margin:0, fontSize:12, color:'var(--muted)'}}>
+                Only 3 packages can be featured at once. If 3 are already featured, featuring this one will automatically unfeature one of the others.
+              </p>
+
+              <div style={{borderTop:'1px solid var(--line)', margin:'8px 0'}} />
+
+              {/* What's included (highlights) */}
+              <div>
+                <p style={sectionLabelStyle}>What's included</p>
+                <div style={{display:'flex', flexDirection:'column', gap:8}}>
+                  {form.highlights.map((h, i) => (
+                    <div key={i} style={{display:'flex', gap:8, alignItems:'center'}}>
+                      <input
+                        value={h}
+                        onChange={e => updateHighlight(i, e.target.value)}
+                        placeholder="e.g. Heritage haveli stays"
+                        style={inputStyle}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeHighlight(i)}
+                        style={{background:'transparent', border:'1px solid var(--line-2)', borderRadius:4, width:32, height:32, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--muted)'}}
+                      >
+                        <Icon name="x" size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  {form.highlights.length === 0 && (
+                    <p style={{fontSize:12, color:'var(--muted)', margin:0}}>No included items yet.</p>
+                  )}
+                  <button type="button" className="btn btn-ghost btn-sm" style={{alignSelf:'flex-start'}} onClick={addHighlight}>
+                    <Icon name="plus" size={12}/> Add item
+                  </button>
+                </div>
+              </div>
+
+              <div style={{borderTop:'1px solid var(--line)', margin:'8px 0'}} />
+
+              {/* Itinerary (day by day) */}
+              <div>
+                <p style={sectionLabelStyle}>Itinerary (day by day)</p>
+                <div style={{display:'flex', flexDirection:'column', gap:16}}>
+                  {form.itinerary.map((day, i) => (
+                    <div key={i} style={{border:'1px solid var(--line)', borderRadius:4, padding:14, display:'flex', flexDirection:'column', gap:10}}>
+                      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                        <span style={{fontFamily:'var(--mono)', fontSize:11, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.08em'}}>Day {i + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeItineraryDay(i)}
+                          style={{background:'transparent', border:'1px solid var(--line-2)', borderRadius:4, width:26, height:26, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--muted)'}}
+                        >
+                          <Icon name="x" size={11} />
+                        </button>
+                      </div>
+                      <input
+                        value={day.title}
+                        onChange={e => updateItineraryDay(i, { title: e.target.value })}
+                        placeholder="Day title, e.g. Arrival in the Pink City"
+                        style={inputStyle}
+                      />
+                      <textarea
+                        value={day.body}
+                        onChange={e => updateItineraryDay(i, { body: e.target.value })}
+                        placeholder="What happens this day…"
+                        rows={3}
+                        style={{...inputStyle, resize:'vertical'}}
+                      />
+                      <input
+                        value={day.activities.join(', ')}
+                        onChange={e => updateItineraryDay(i, { activities: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                        placeholder="Activities, comma-separated e.g. Private transfer, Heritage dinner"
+                        style={inputStyle}
+                      />
+                    </div>
+                  ))}
+                  {form.itinerary.length === 0 && (
+                    <p style={{fontSize:12, color:'var(--muted)', margin:0}}>No itinerary days yet.</p>
+                  )}
+                  <button type="button" className="btn btn-ghost btn-sm" style={{alignSelf:'flex-start'}} onClick={addItineraryDay}>
+                    <Icon name="plus" size={12}/> Add day
+                  </button>
+                </div>
+              </div>
+
+              <div style={{borderTop:'1px solid var(--line)', margin:'8px 0'}} />
+
+              {/* Reviews */}
+              <div>
+                <p style={sectionLabelStyle}>Reviews</p>
+                {loadingReviews ? (
+                  <p style={{fontSize:12, color:'var(--muted)'}}>Loading reviews…</p>
+                ) : (
+                  <div style={{display:'flex', flexDirection:'column', gap:10, marginBottom:14}}>
+                    {reviews.length === 0 && (
+                      <p style={{fontSize:12, color:'var(--muted)', margin:0}}>No reviews yet for this package.</p>
+                    )}
+                    {reviews.map(r => (
+                      <div key={r.id} style={{border:'1px solid var(--line)', borderRadius:4, padding:12, display:'flex', justifyContent:'space-between', gap:10}}>
+                        <div>
+                          <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:4}}>
+                            <span style={{fontWeight:500, fontSize:13}}>{r.name}</span>
+                            <span style={{fontFamily:'var(--mono)', fontSize:11, color:'var(--clay)'}}>{r.rating.toFixed(1)}★</span>
+                          </div>
+                          <p style={{fontSize:13, color:'var(--ink-2)', margin:0}}>{r.quote}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReview(r.id)}
+                          style={{background:'transparent', border:'1px solid var(--line-2)', borderRadius:4, width:26, height:26, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--muted)'}}
+                        >
+                          <Icon name="x" size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{border:'1px dashed var(--line-2)', borderRadius:4, padding:12, display:'flex', flexDirection:'column', gap:8}}>
+                  <div style={{display:'grid', gridTemplateColumns:'1fr 90px', gap:8}}>
+                    <input
+                      value={newReview.name}
+                      onChange={e => setNewReview(r => ({...r, name: e.target.value}))}
+                      placeholder="Reviewer name"
+                      style={inputStyle}
+                    />
+                    <input
+                      type="number" min={1} max={5} step={0.5}
+                      value={newReview.rating}
+                      onChange={e => setNewReview(r => ({...r, rating: parseFloat(e.target.value) || 5}))}
+                      style={inputStyle}
+                    />
+                  </div>
+                  <textarea
+                    value={newReview.quote}
+                    onChange={e => setNewReview(r => ({...r, quote: e.target.value}))}
+                    placeholder="What did they say about this trip?"
+                    rows={2}
+                    style={{...inputStyle, resize:'vertical'}}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{alignSelf:'flex-start'}}
+                    onClick={handleAddReview}
+                    disabled={addingReview || !newReview.name.trim() || !newReview.quote.trim()}
+                  >
+                    <Icon name="plus" size={12}/> {addingReview ? 'Adding…' : 'Add review'}
+                  </button>
+                </div>
+              </div>
 
             </div>
 
@@ -309,6 +666,170 @@ export default function PackagesPage() {
           </div>
         </>
       )}
+
+      {/* Create package modal */}
+      {showCreateModal && (
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(28,25,22,0.6)',
+          backdropFilter:'blur(4px)', display:'flex', alignItems:'center',
+          justifyContent:'center', zIndex:1000, padding:24
+        }}>
+          <div style={{
+            background:'var(--paper)', border:'1px solid var(--line)',
+            borderRadius:8, padding:32, maxWidth:600, width:'100%',
+            boxShadow:'0 20px 40px rgba(0,0,0,0.15)', maxHeight:'90vh', overflowY:'auto'
+          }}>
+            <h3 style={{fontSize:24, marginBottom:20}}>Add New Travel Package</h3>
+            <form onSubmit={handleCreate} style={{display:'flex', flexDirection:'column', gap:16}}>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+                <div className="field-group">
+                  <label>Package ID (slug)</label>
+                  <input required placeholder="jaipur-escape" value={newPkg.id} onChange={e => setNewPkg({...newPkg, id: e.target.value})}/>
+                </div>
+                <div className="field-group">
+                  <label>Trip Title</label>
+                  <input required placeholder="Jaipur Heritage Escape" value={newPkg.title} onChange={e => setNewPkg({...newPkg, title: e.target.value})}/>
+                </div>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+                <div className="field-group">
+                  <label>Destination City/Area</label>
+                  <input required placeholder="Jaipur, India" value={newPkg.destination} onChange={e => setNewPkg({...newPkg, destination: e.target.value})}/>
+                </div>
+                <div className="field-group">
+                  <label>Region</label>
+                  <select value={newPkg.region} onChange={e => setNewPkg({...newPkg, region: e.target.value})}>
+                    <option value="India">India</option>
+                    <option value="UAE">UAE</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr', gap:16}}>
+                <div className="field-group">
+                  <label>Trip Type</label>
+                  <select value={newPkg.type} onChange={e => setNewPkg({...newPkg, type: e.target.value})}>
+                    <option value="Cultural">Cultural</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Culinary">Culinary</option>
+                    <option value="Wellness">Wellness</option>
+                    <option value="Family">Family</option>
+                    <option value="Luxury">Luxury</option>
+                  </select>
+                </div>
+                <div className="field-group">
+                  <label>Duration (Days)</label>
+                  <input required type="number" min={1} value={newPkg.duration} onChange={e => setNewPkg({...newPkg, duration: parseInt(e.target.value) || 0})}/>
+                </div>
+                <div className="field-group">
+                  <label>Nights</label>
+                  <input required type="number" min={0} value={newPkg.nights} onChange={e => setNewPkg({...newPkg, nights: parseInt(e.target.value) || 0})}/>
+                </div>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+                <div className="field-group">
+                  <label>Price per person (₹)</label>
+                  <input required type="number" min={0} value={newPkg.price} onChange={e => setNewPkg({...newPkg, price: parseInt(e.target.value) || 0})}/>
+                </div>
+                <div className="field-group">
+                  <label>Original Price (optional)</label>
+                  <input type="number" min={0} value={newPkg.priceWas ?? ''} onChange={e => setNewPkg({...newPkg, priceWas: e.target.value ? (parseInt(e.target.value) || 0) : undefined})}/>
+                </div>
+              </div>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+                <div className="field-group">
+                  <label>Rating</label>
+                  <input type="number" min={0} max={5} step={0.1} value={newPkg.rating} onChange={e => setNewPkg({...newPkg, rating: parseFloat(e.target.value) || 0})}/>
+                </div>
+                <div className="field-group">
+                  <label>Reviews</label>
+                  <input type="number" min={0} value={newPkg.reviews} onChange={e => setNewPkg({...newPkg, reviews: parseInt(e.target.value) || 0})}/>
+                </div>
+              </div>
+              <div className="field-group">
+                <label>Blurb/Overview</label>
+                <textarea required style={{minHeight: 80, padding: 12}} placeholder="Describe the trip mood and layout..." value={newPkg.blurb} onChange={e => setNewPkg({...newPkg, blurb: e.target.value})}/>
+              </div>
+              <div className="field-group">
+                <label>Cover Image URL</label>
+                <input placeholder="https://images.unsplash.com/..." value={newPkg.img} onChange={e => setNewPkg({...newPkg, img: e.target.value})}/>
+              </div>
+              {newPkg.img && (
+                <div style={{borderRadius:4, overflow:'hidden', height:120, backgroundImage:`url(${newPkg.img})`, backgroundSize:'cover', backgroundPosition:'center', border:'1px solid var(--line)'}} />
+              )}
+              {createError && <span style={{fontSize:13, color:'#b8443a'}}>{createError}</span>}
+              <div style={{display:'flex', justifyContent:'flex-end', gap:12, marginTop:12}}>
+                <button type="button" className="btn btn-ghost" onClick={closeCreate} disabled={creating}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={creating}>
+                  {creating ? 'Creating…' : 'Create Package'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Images modal — the "+N Photos" gallery shown on each package's detail page */}
+      {managingImages && (
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(28,25,22,0.6)',
+          backdropFilter:'blur(4px)', display:'flex', alignItems:'center',
+          justifyContent:'center', zIndex:1000, padding:24
+        }}>
+          <div style={{
+            background:'var(--paper)', border:'1px solid var(--line)',
+            borderRadius:8, padding:32, maxWidth:560, width:'100%',
+            boxShadow:'0 20px 40px rgba(0,0,0,0.15)', maxHeight:'90vh', overflowY:'auto'
+          }}>
+            <p style={{fontFamily:'var(--mono)', fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--muted)', marginBottom:4}}>Manage images</p>
+            <h3 style={{fontSize:22, marginBottom:6}}>{managingImages.title}</h3>
+            <p style={{fontSize:13, color:'var(--muted)', marginBottom:20}}>
+              These are the gallery photos shown on the trip's detail page (the "+N Photos" preview).
+            </p>
+
+            <div style={{display:'flex', flexDirection:'column', gap:10}}>
+              {galleryUrls.map((url, i) => (
+                <div key={i} style={{display:'flex', gap:10, alignItems:'center'}}>
+                  <div style={{
+                    width:44, height:44, borderRadius:4, flexShrink:0,
+                    backgroundImage: url ? `url(${url})` : undefined,
+                    backgroundSize:'cover', backgroundPosition:'center',
+                    background: url ? undefined : 'var(--sand)',
+                    border:'1px solid var(--line)',
+                  }} />
+                  <input
+                    value={url}
+                    onChange={e => updateImageUrl(i, e.target.value)}
+                    placeholder="https://images.unsplash.com/…"
+                    style={inputStyle}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImageUrl(i)}
+                    style={{background:'transparent', border:'1px solid var(--line-2)', borderRadius:4, width:32, height:32, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--muted)'}}
+                  >
+                    <Icon name="x" size={12} />
+                  </button>
+                </div>
+              ))}
+              {galleryUrls.length === 0 && (
+                <p style={{fontSize:13, color:'var(--muted)', margin:0}}>No gallery images yet. Add one below.</p>
+              )}
+              <button type="button" className="btn btn-ghost btn-sm" style={{alignSelf:'flex-start'}} onClick={addImageUrl}>
+                <Icon name="plus" size={12}/> Add image
+              </button>
+            </div>
+
+            {imagesError && <p style={{fontSize:13, color:'#b8443a', marginTop:16}}>{imagesError}</p>}
+
+            <div style={{display:'flex', justifyContent:'flex-end', gap:12, marginTop:24}}>
+              <button type="button" className="btn btn-ghost" onClick={closeImages} disabled={savingImages}>Cancel</button>
+              <button type="button" className="btn btn-primary" onClick={handleSaveImages} disabled={savingImages}>
+                {savingImages ? 'Saving…' : 'Save images'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -323,6 +844,15 @@ const inputStyle: React.CSSProperties = {
   background: 'var(--paper)',
   outline: 'none',
   width: '100%',
+};
+
+const sectionLabelStyle: React.CSSProperties = {
+  fontFamily: 'var(--mono)',
+  fontSize: 11,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+  marginBottom: 12,
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

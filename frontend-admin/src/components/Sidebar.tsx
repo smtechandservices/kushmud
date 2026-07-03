@@ -1,14 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from './Icon';
 import navItems from '@/assets/admin-nav.json';
-import { logout } from '@/lib/data';
+import { logout, fetchMe, AdminUser } from '@/lib/data';
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [me, setMe] = useState<AdminUser | null>(null);
+
+  useEffect(() => {
+    fetchMe().then(setMe).catch(() => {});
+  }, []);
+
+  const displayName = me ? (me.first_name ? `${me.first_name} ${me.last_name}`.trim() : me.username) : '';
+  const initials = displayName ? displayName.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() : '';
 
   return (
     <aside className="admin-side">
@@ -34,10 +42,10 @@ export function Sidebar() {
       </nav>
       <div className="admin-side-foot" style={{flexDirection: 'column', gap: 16}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 12, width: '100%'}}>
-          <div className="admin-avatar" style={{ backgroundImage:'url(https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&auto=format&fit=crop)' }}></div>
+          <div className="admin-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--clay)', color: 'white', fontFamily: 'var(--mono)', fontSize: 12 }}>{initials}</div>
           <div>
-            <div className="name">Naomi Field</div>
-            <div className="role">Asia Editor</div>
+            <div className="name">{displayName || 'Loading…'}</div>
+            <div className="role">Admin</div>
           </div>
         </div>
         <button 
