@@ -787,6 +787,7 @@ button { font-family: inherit; cursor: pointer; }
   border-bottom: 1px solid rgba(244,237,224,0.12);
 }
 .footer .brand { color: var(--paper); font-size: 28px; }
+.footer .brand-sub { color: var(--sand); opacity: 0.55; }
 .footer-tag {
   margin-top: 16px;
   font-size: 14px;
@@ -1855,3 +1856,155 @@ button { font-family: inherit; cursor: pointer; }
   .auth-page { grid-template-columns: 1fr; }
   .auth-visual { display: none; }
 }
+
+/* WhatsApp widget */
+.wa-widget {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9999;
+  font-family: var(--sans);
+}
+.wa-panel-wrap {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 16px;
+  transform-origin: bottom right;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.95);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+.wa-panel-wrap.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.wa-panel {
+  width: 320px;
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.wa-panel-header {
+  border-bottom: 1px solid var(--line);
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.wa-panel-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: var(--forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wa-panel-icon svg { width: 20px; height: 20px; fill: var(--paper); }
+.wa-panel-title {
+  min-width: 0;
+  font-family: var(--serif);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.3;
+}
+.wa-panel-subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+  margin-top: 4px;
+}
+.wa-contacts {
+  display: flex;
+  flex-direction: column;
+}
+.wa-contact {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  border-radius: var(--radius);
+  transition: background-color 0.2s ease;
+}
+.wa-contact:hover { background: var(--sand); }
+.wa-contact-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: var(--sand-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+.wa-contact:hover .wa-contact-icon { background: var(--forest); }
+.wa-contact-icon svg { width: 16px; height: 16px; fill: var(--forest); transition: fill 0.2s ease; }
+.wa-contact:hover .wa-contact-icon svg { fill: var(--paper); }
+.wa-contact-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 500;
+}
+.wa-contact-phone {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.wa-caret {
+  width: 14px;
+  height: 14px;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+  position: absolute;
+  bottom: -6px;
+  right: 36px;
+}
+.wa-fab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--forest);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: background-color 0.3s ease-out, transform 0.3s ease-out;
+}
+.wa-fab:hover, .wa-fab.is-open { background: var(--forest-2); }
+.wa-fab:active { transform: scale(0.95); }
+.wa-fab-label {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  transition: width 0.3s ease-out;
+}
+.wa-fab-label.is-open { width: 160px; }
+.wa-fab-label span {
+  display: block;
+  padding: 0 8px 0 24px;
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 600;
+}
+.wa-fab-icon {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wa-fab-icon svg { width: 28px; height: 28px; fill: var(--paper); }

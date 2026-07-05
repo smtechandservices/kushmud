@@ -7,7 +7,12 @@ export const Footer: React.FC = () => {
       <div className="container">
         <div className="footer-top">
           <div>
-            <div className="brand">Kushmud<span className="dot" style={{background:'var(--clay)'}}></span></div>
+            <div className="brand">
+              <span className="brand-wrap">
+                <span className="brand-name">Kushmud<span className="dot" style={{background:'var(--clay)'}}></span></span>
+                <span className="brand-sub">Travel &amp; Tourism</span>
+              </span>
+            </div>
             <p className="footer-tag">Considered travel across India and the UAE for people who'd rather pack light and go slow. Curated since 2017.</p>
           </div>
           <div className="footer-col">
