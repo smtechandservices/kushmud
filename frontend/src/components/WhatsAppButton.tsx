@@ -2,8 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 
 const CONTACTS = [
-  { label: 'Support [IN]', phone: '+91 9250323946' },
-  { label: 'Support [UAE]', phone: '+971 526753757' },
+  { label: 'Support [IN]', phone: '+919250323946' },
+  { label: 'Support [UAE]', phone: '+971526753757' },
 ];
 
 const message = 'Hello, I have a query about your services.';

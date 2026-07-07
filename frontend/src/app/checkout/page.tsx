@@ -31,6 +31,14 @@ function formatDateRange(start: Date, end: Date): string {
   return `${startMonth} ${start.getDate()}, ${startYear} — ${endMonth} ${end.getDate()}, ${endYear}`;
 }
 
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function isValidPhone(value: string): boolean {
+  return /^\d{7,15}$/.test(value.trim().replace(/[\s-]/g, ''));
+}
+
 function computeTripDates(pkg: Package, departureDate: string): { dates: string; end: Date } | null {
   if (!departureDate) return null;
   const start = parseDateInput(departureDate);
@@ -131,6 +139,8 @@ function CheckoutContent() {
 
   const [departureDate, setDepartureDate] = useState('');
   const [dateError, setDateError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -148,6 +158,22 @@ function CheckoutContent() {
       return;
     }
     setDateError('');
+
+    let hasError = false;
+    if (!isValidEmail(email)) {
+      setEmailError('Please enter a valid email address.');
+      hasError = true;
+    } else {
+      setEmailError('');
+    }
+    if (!isValidPhone(phone)) {
+      setPhoneError('Please enter a valid phone number (7–15 digits).');
+      hasError = true;
+    } else {
+      setPhoneError('');
+    }
+    if (hasError) return;
+
     setIsSubmitting(true);
     try {
       const data = await createBooking({
@@ -294,7 +320,12 @@ function CheckoutContent() {
             </div>
             <div className="field-group full">
               <label>Email</label>
-              <input value={email} onChange={e => setEmail(e.target.value)}/>
+              <input
+                type="email"
+                value={email}
+                onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+              />
+              {emailError && <span style={{color: 'var(--clay)', fontSize: 12, marginTop: 4, display: 'block'}}>{emailError}</span>}
             </div>
             <div className="field-group">
               <label>Phone</label>
@@ -311,19 +342,26 @@ function CheckoutContent() {
                 <input
                   type="tel"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={e => { setPhone(e.target.value); setPhoneError(''); }}
                   placeholder="98765 43210"
                   style={{flex:1}}
                 />
               </div>
+              {phoneError && <span style={{color: 'var(--clay)', fontSize: 12, marginTop: 4, display: 'block'}}>{phoneError}</span>}
             </div>
             <div className="field-group">
               <label>Number of travelers</label>
               <input
                 type="number"
                 min={1}
-                value={pax}
-                onChange={e => setPax(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                value={pax === 0 ? '' : pax}
+                onChange={e => {
+                  const raw = e.target.value;
+                  if (raw === '') { setPax(0); return; }
+                  const n = parseInt(raw, 10);
+                  if (!isNaN(n)) setPax(n);
+                }}
+                onBlur={() => setPax(p => Math.max(1, p))}
               />
             </div>
           </div>
@@ -338,7 +376,7 @@ function CheckoutContent() {
                 value={remarks}
                 onChange={e => setRemarks(e.target.value)}
                 rows={4}
-                style={{resize: 'vertical', fontFamily: 'inherit'}}
+                style={{resize: 'vertical', fontFamily: 'inherit', padding: 8}}
               />
             </div>
           </div>

@@ -7,7 +7,7 @@ import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
 import {
   fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials, fetchSiteStats,
-  subscribeToNewsletter,
+  subscribeToNewsletter, isCustomerLoggedIn, fetchNewsletterStatus,
   Package, Offer, Destination, Testimonial, SiteStats
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
@@ -34,6 +34,9 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [testi, setTesti] = useState(0);
   const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [destOrder, setDestOrder] = useState<number[]>([]);
+  const [destSwapPos, setDestSwapPos] = useState<number | null>(null);
+  const destSwapCursor = useRef(0);
 
   useEffect(() => {
     async function loadData() {
@@ -59,7 +62,38 @@ export default function Home() {
       } catch (e) { console.error(e); }
     }
     loadData();
+
+    if (isCustomerLoggedIn()) {
+      fetchNewsletterStatus()
+        .then(status => setIsNewsletterSubscribed(status.subscribed))
+        .catch(() => {});
+    }
   }, []);
+
+  useEffect(() => {
+    setDestOrder(destinations.map((_, i) => i));
+    destSwapCursor.current = 0;
+  }, [destinations]);
+
+  useEffect(() => {
+    if (destOrder.length < 2) return;
+    const DEST_SWAP_INTERVAL = 5000;
+    const DEST_FADE_MS = 450;
+    const interval = setInterval(() => {
+      const pos = 1 + (destSwapCursor.current % (destOrder.length - 1));
+      destSwapCursor.current += 1;
+      setDestSwapPos(pos);
+      setTimeout(() => {
+        setDestOrder(prev => {
+          const next = [...prev];
+          [next[0], next[pos]] = [next[pos], next[0]];
+          return next;
+        });
+        setDestSwapPos(null);
+      }, DEST_FADE_MS);
+    }, DEST_SWAP_INTERVAL);
+    return () => clearInterval(interval);
+  }, [destOrder.length]);
 
   const featured = packages.filter(p => p.featured).slice(0, 3);
   const featuredList = featured.length > 0 ? featured : packages.slice(0, 3);
@@ -98,6 +132,7 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState('');
+  const [isNewsletterSubscribed, setIsNewsletterSubscribed] = useState(false);
 
   async function handleNewsletterSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,12 +151,87 @@ export default function Home() {
     }
   }
 
-  const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
+  // const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
+  const heroVideos = [
+    "https://media.gettyimages.com/id/1280006497/video/t-l-aerial-view-of-dubai-skyline-at-sunrise-dubai-uae.mp4?s=mp4-640x640-gi&k=20&c=mkoDVR6EN9kKijsto5hTOp5Yx1Y6kIpucaEHYT3J9gc=",
+    "https://media.gettyimages.com/id/140813852/video/panoramic-view-of-chemrey-monastery-on-the-mountains.mp4?s=mp4-640x640-gi&k=20&c=-3Wyu_Ym0SWSgQLJngCnodNBrWag2W8U9geIQ5OyLnA=",
+    "https://media.gettyimages.com/id/103256040/video/side-houseboat-sailing-on-kerala-backwaters-cochin-kerala-india.mp4?s=mp4-640x640-gi&k=20&c=tNp68UTFuPlO6O0ZE2zHQzSwUD9ga6B-dRoQm9j55KM="
+  ];
+  const HERO_FADE_MS = 1200;
+  const HERO_MAX_PLAY_S = 8;
+  const [activeHeroSlot, setActiveHeroSlot] = useState<0 | 1>(0);
+  const [heroSlotSrc, setHeroSlotSrc] = useState<[string, string]>([
+    heroVideos[0],
+    heroVideos[1 % heroVideos.length],
+  ]);
+  const heroVideoRefA = useRef<HTMLVideoElement>(null);
+  const heroVideoRefB = useRef<HTMLVideoElement>(null);
+  const heroSlotRefs = [heroVideoRefA, heroVideoRefB];
+  const nextHeroVideoCursor = useRef(2 % heroVideos.length);
+
+  useEffect(() => {
+    heroSlotRefs[activeHeroSlot].current?.play().catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleHeroTimeUpdate(slot: 0 | 1) {
+    if (heroVideos.length < 2 || slot !== activeHeroSlot) return;
+    const video = heroSlotRefs[slot].current;
+    if (!video) return;
+    const fadeLeadS = HERO_FADE_MS / 1000;
+    const hitMaxPlay = video.currentTime >= HERO_MAX_PLAY_S - fadeLeadS;
+    const nearNaturalEnd = video.duration ? video.duration - video.currentTime <= fadeLeadS : false;
+    if (hitMaxPlay || nearNaturalEnd) {
+      const inactive = slot === 0 ? 1 : 0;
+      heroSlotRefs[inactive].current?.play().catch(() => {});
+      setActiveHeroSlot(inactive);
+    }
+  }
+
+  function handleHeroTransitionEnd(slot: 0 | 1) {
+    if (heroVideos.length < 2 || slot === activeHeroSlot) return;
+    const video = heroSlotRefs[slot].current;
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+    const nextIndex = nextHeroVideoCursor.current;
+    nextHeroVideoCursor.current = (nextIndex + 1) % heroVideos.length;
+    setHeroSlotSrc(prev => {
+      const next = [...prev] as [string, string];
+      next[slot] = heroVideos[nextIndex];
+      return next;
+    });
+  }
 
   return (
     <MainLayout>
       <section className="hero">
-        <div className="hero-img" style={{ backgroundImage: `url(${heroImg})` }}></div>
+        <video
+          ref={heroVideoRefA}
+          className="hero-video"
+          src={heroSlotSrc[0]}
+          muted
+          playsInline
+          preload="auto"
+          loop={heroVideos.length < 2}
+          style={{ opacity: activeHeroSlot === 0 ? 1 : 0, transition: `opacity ${HERO_FADE_MS}ms ease` }}
+          onTimeUpdate={() => handleHeroTimeUpdate(0)}
+          onTransitionEnd={() => handleHeroTransitionEnd(0)}
+        />
+        {heroVideos.length > 1 && (
+          <video
+            ref={heroVideoRefB}
+            className="hero-video"
+            src={heroSlotSrc[1]}
+            muted
+            playsInline
+            preload="auto"
+            style={{ opacity: activeHeroSlot === 1 ? 1 : 0, transition: `opacity ${HERO_FADE_MS}ms ease` }}
+            onTimeUpdate={() => handleHeroTimeUpdate(1)}
+            onTransitionEnd={() => handleHeroTransitionEnd(1)}
+          />
+        )}
         <div className="hero-content">
           <div className="hero-eyebrow"><span className="line"></span> Kushmud · Spring '26 Collection</div>
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>
@@ -327,7 +437,7 @@ export default function Home() {
           <div className="section-head">
             <div>
               <span className="eyebrow" style={{color:'rgba(244,237,224,0.7)'}}>— Current offers</span>
-              <h2 style={{color:'var(--paper)'}}>Three reasons to book <em style={{fontStyle:'italic', color:'var(--clay-2)'}}>this month.</em></h2>
+              <h2 style={{color:'var(--paper)'}}>Reasons to book <em style={{fontStyle:'italic', color:'var(--clay-2)'}}>this month.</em></h2>
             </div>
             <div className="meta" style={{color:'rgba(244,237,224,0.6)'}}>Limited dates. We honour any quoted price for 14 days from your first call.</div>
           </div>
@@ -391,20 +501,25 @@ export default function Home() {
             <div className="meta">India and the UAE — two regions, hundreds of routes. We'd rather know two places deeply than fifty lightly.</div>
           </div>
           <div className="dest-grid">
-            {destinations.map((d, i) => (
-              <Link
-                key={i}
-                href={`/packages?region=${encodeURIComponent(d.name.split(' ')[0] === 'Rajasthan' || d.name === 'Kerala' || d.name === 'Ladakh' ? 'India' : d.name === 'Dubai' || d.name === 'Abu Dhabi' ? 'UAE' : 'India')}`}
-                className={'dest-card ' + (d.size || '')}
-                style={{ backgroundImage: `url(${d.img})`, gridRow: d.size === 'lg' ? 'span 2' : undefined }}
-              >
-                <div className="dest-content">
-                  <span className="eyebrow" style={{color:'rgba(255,255,255,0.85)'}}>{d.tag}</span>
-                  <h3>{d.name}</h3>
-                  <div className="count">{d.count} curated trips</div>
-                </div>
-              </Link>
-            ))}
+            {destOrder.slice(0, 5).map((destIdx, pos) => {
+              const d = destinations[destIdx];
+              const isLg = pos === 0;
+              const isSwapping = destSwapPos !== null && (pos === 0 || pos === destSwapPos);
+              return (
+                <Link
+                  key={pos}
+                  href={`/packages?region=${encodeURIComponent(d.name.split(' ')[0] === 'Rajasthan' || d.name === 'Kerala' || d.name === 'Ladakh' ? 'India' : d.name === 'Dubai' || d.name === 'Abu Dhabi' ? 'UAE' : 'India')}`}
+                  className={'dest-card ' + (isLg ? 'lg' : '') + (isSwapping ? ' dest-swap' : '')}
+                  style={{ backgroundImage: `url(${d.img})`, gridRow: isLg ? 'span 2' : undefined }}
+                >
+                  <div className="dest-content">
+                    <span className="eyebrow" style={{color:'rgba(255,255,255,0.85)'}}>{d.tag}</span>
+                    <h3>{d.name}</h3>
+                    <div className="count">{d.count} curated trips</div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -425,9 +540,19 @@ export default function Home() {
                 </div>
               </div>
               <div className="testi-nav">
-                {testimonials.map((_, i) =>
-                  <button key={i} className={'testi-dot ' + (i === testi ? 'active' : '')} onClick={() => setTesti(i)}></button>
-                )}
+                <div className="testi-dots">
+                  {testimonials.map((_, i) =>
+                    <button key={i} className={'testi-dot ' + (i === testi ? 'active' : '')} onClick={() => setTesti(i)}></button>
+                  )}
+                </div>
+                &nbsp;
+                <button
+                  style={{marginLeft: 8, marginTop: 8}}
+                  className="testi-next"
+                  onClick={() => setTesti((testi + 1) % testimonials.length)}
+                >
+                  <Icon name="arrow-right" size={13}/>
+                </button>
               </div>
             </div>
           </div>
@@ -443,23 +568,32 @@ export default function Home() {
               <p>Once a month. Notes from our planners on the road, and one trip we think you'd like that hasn't filled yet.</p>
             </div>
             <div>
-              <form className="news-form" onSubmit={handleNewsletterSubmit}>
-                <input
-                  type="email"
-                  placeholder="your.address@email.com"
-                  value={newsletterEmail}
-                  onChange={e => setNewsletterEmail(e.target.value)}
-                  required
-                  disabled={newsletterStatus === 'loading'}
-                />
-                <button type="submit" disabled={newsletterStatus === 'loading'}>
-                  {newsletterStatus === 'loading' ? 'Subscribing…' : 'Subscribe'} <Icon name="arrow-right" size={14}/>
-                </button>
-              </form>
-              {newsletterMessage && (
-                <p style={{marginTop:14, fontSize:12, opacity:0.85}}>{newsletterMessage}</p>
+              {isNewsletterSubscribed ? (
+                <p style={{fontSize:14}}>
+                  You are already a subscriber.<br/>
+                  Want to unsubscribe? Go to your <Link href="/profile" style={{textDecoration:'underline'}}>profile</Link>.
+                </p>
+              ) : (
+                <>
+                  <form className="news-form" onSubmit={handleNewsletterSubmit}>
+                    <input
+                      type="email"
+                      placeholder="your.address@email.com"
+                      value={newsletterEmail}
+                      onChange={e => setNewsletterEmail(e.target.value)}
+                      required
+                      disabled={newsletterStatus === 'loading'}
+                    />
+                    <button type="submit" disabled={newsletterStatus === 'loading'}>
+                      {newsletterStatus === 'loading' ? 'Subscribing…' : 'Subscribe'} <Icon name="arrow-right" size={14}/>
+                    </button>
+                  </form>
+                  {newsletterMessage && (
+                    <p style={{marginTop:14, fontSize:12, opacity:0.85}}>{newsletterMessage}</p>
+                  )}
+                  <p style={{marginTop:14, fontSize:12, opacity:0.55}}>No spam. Unsubscribe at the bottom of any letter.</p>
+                </>
               )}
-              <p style={{marginTop:14, fontSize:12, opacity:0.55}}>No spam. Unsubscribe at the bottom of any letter.</p>
             </div>
           </div>
         </div>

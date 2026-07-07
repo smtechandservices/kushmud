@@ -3,19 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
-import { fetchDestinations, createDestination, deleteDestination, Destination } from '@/lib/data';
+import { fetchDestinations, createDestination, updateDestination, deleteDestination, Destination } from '@/lib/data';
+
+const BLANK_DEST = {
+  name: '',
+  count: 0,
+  img: '',
+  tag: 'Explore',
+};
 
 export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [newDest, setNewDest] = useState({
-    name: '',
-    count: 0,
-    img: '',
-    tag: 'Explore',
-    size: '',
-  });
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [newDest, setNewDest] = useState(BLANK_DEST);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
@@ -31,21 +33,33 @@ export default function DestinationsPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingName(null);
+    setNewDest(BLANK_DEST);
+    setShowModal(true);
+  };
+
+  const openEditModal = (d: Destination) => {
+    setEditingName(d.name);
+    setNewDest({ name: d.name, count: d.count, img: d.img, tag: d.tag });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const payload = { ...newDest };
-      if (!payload.size) delete (payload as any).size;
-      await createDestination(payload);
+      if (editingName) {
+        await updateDestination(editingName, payload);
+      } else {
+        await createDestination(payload);
+      }
       setShowModal(false);
-      setNewDest({
-        name: '', count: 0,
-        img: '',
-        tag: 'Explore', size: '',
-      });
+      setEditingName(null);
+      setNewDest(BLANK_DEST);
       await loadData();
     } catch (e) {
-      alert('Failed to create destination');
+      alert(editingName ? 'Failed to update destination' : 'Failed to create destination');
     }
   };
 
@@ -83,7 +97,7 @@ export default function DestinationsPage() {
               style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
             />
           </div>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
+          <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
             <Icon name="plus" size={13}/> New destination
           </button>
         </div>
@@ -126,14 +140,6 @@ export default function DestinationsPage() {
                       fontFamily:'var(--mono)', letterSpacing:'0.06em', textTransform:'uppercase',
                       backdropFilter:'blur(4px)'
                     }}>{d.tag}</span>
-                    {d.size === 'lg' && (
-                      <span style={{
-                        position:'absolute', top:12, right:12,
-                        background:'var(--clay)', color:'white',
-                        padding:'4px 10px', borderRadius:20, fontSize:10,
-                        fontFamily:'var(--mono)', letterSpacing:'0.06em', textTransform:'uppercase'
-                      }}>Featured</span>
-                    )}
                   </div>
                   <div style={{padding:'16px 20px'}}>
                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
@@ -141,13 +147,22 @@ export default function DestinationsPage() {
                         <h4 style={{fontSize:16, marginBottom:4}}>{d.name}</h4>
                         <span style={{fontSize:12, color:'var(--muted)', fontFamily:'var(--mono)'}}>{d.count} packages</span>
                       </div>
-                      <button
-                        className="btn btn-sm btn-ghost"
-                        style={{padding:'4px 8px', color:'#c79a4a'}}
-                        onClick={() => handleDelete(d.name)}
-                      >
-                        Delete
-                      </button>
+                      <div style={{display:'flex', gap:4}}>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          style={{padding:'4px 8px'}}
+                          onClick={() => openEditModal(d)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          style={{padding:'4px 8px', color:'#c79a4a'}}
+                          onClick={() => handleDelete(d.name)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -157,7 +172,7 @@ export default function DestinationsPage() {
         </div>
       </main>
 
-      {/* ── Create Destination Modal ── */}
+      {/* ── Create / Edit Destination Modal ── */}
       {showModal && (
         <div style={{
           position:'fixed', inset:0, background:'rgba(28,25,22,0.6)',
@@ -169,11 +184,11 @@ export default function DestinationsPage() {
             borderRadius:8, padding:32, maxWidth:480, width:'100%',
             boxShadow:'0 20px 40px rgba(0,0,0,0.15)'
           }}>
-            <h3 style={{fontSize:24, marginBottom:20}}>Add New Destination</h3>
-            <form onSubmit={handleCreate} style={{display:'flex', flexDirection:'column', gap:16}}>
+            <h3 style={{fontSize:24, marginBottom:20}}>{editingName ? 'Edit Destination' : 'Add New Destination'}</h3>
+            <form onSubmit={handleSubmit} style={{display:'flex', flexDirection:'column', gap:16}}>
               <div className="field-group">
                 <label>Destination Name</label>
-                <input required placeholder="Goa, India" value={newDest.name} onChange={e => setNewDest({...newDest, name: e.target.value})}/>
+                <input required disabled={!!editingName} placeholder="Goa, India" value={newDest.name} onChange={e => setNewDest({...newDest, name: e.target.value})}/>
               </div>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
@@ -196,16 +211,9 @@ export default function DestinationsPage() {
                 <label>Cover Image URL</label>
                 <input required placeholder="https://images.unsplash.com/…" value={newDest.img} onChange={e => setNewDest({...newDest, img: e.target.value})}/>
               </div>
-              <div className="field-group">
-                <label>Size (leave blank for normal, enter "lg" for featured)</label>
-                <select value={newDest.size} onChange={e => setNewDest({...newDest, size: e.target.value})}>
-                  <option value="">Normal</option>
-                  <option value="lg">Featured (Large)</option>
-                </select>
-              </div>
               <div style={{display:'flex', justifyContent:'flex-end', gap:12, marginTop:12}}>
-                <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Add Destination</button>
+                <button type="button" className="btn btn-ghost" onClick={() => { setShowModal(false); setEditingName(null); }}>Cancel</button>
+                <button type="submit" className="btn btn-primary">{editingName ? 'Save Changes' : 'Add Destination'}</button>
               </div>
             </form>
           </div>

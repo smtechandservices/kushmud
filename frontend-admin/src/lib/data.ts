@@ -75,6 +75,7 @@ export interface Booking {
   phone?: string | null;
   pax?: number;
   remarks?: string | null;
+  created_at?: string;
 }
 
 export interface FAQ {
@@ -116,6 +117,8 @@ export interface AdminUser {
   first_name: string;
   last_name: string;
   email: string;
+  is_superuser?: boolean;
+  is_active?: boolean;
 }
 
 export interface RegisteredCustomer {
@@ -178,6 +181,12 @@ async function authFetch(url: string, options: RequestInit = {}) {
 export async function fetchStats(): Promise<any> {
   const res = await authFetch(getApiUrl('/api/stats/'));
   if (!res.ok) throw new Error('Failed to fetch stats');
+  return await res.json();
+}
+
+export async function fetchAnalytics(): Promise<any> {
+  const res = await authFetch(getApiUrl('/api/analytics/'));
+  if (!res.ok) throw new Error('Failed to fetch analytics');
   return await res.json();
 }
 
@@ -299,6 +308,16 @@ export async function createOffer(offerData: any): Promise<Offer> {
   return await res.json();
 }
 
+export async function updateOffer(id: string, offerData: Partial<Offer>): Promise<Offer> {
+  const res = await authFetch(getApiUrl(`/api/offers/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(offerData),
+  });
+  if (!res.ok) throw new Error('Failed to update offer');
+  return await res.json();
+}
+
 export async function deleteOffer(id: string): Promise<void> {
   const res = await authFetch(getApiUrl(`/api/offers/${id}/`), {
     method: 'DELETE',
@@ -320,6 +339,16 @@ export async function createDestination(data: any): Promise<Destination> {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create destination');
+  return await res.json();
+}
+
+export async function updateDestination(name: string, data: any): Promise<Destination> {
+  const res = await authFetch(getApiUrl(`/api/destinations/${encodeURIComponent(name)}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update destination');
   return await res.json();
 }
 
@@ -499,4 +528,56 @@ export async function deleteRegisteredCustomer(id: number): Promise<void> {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete customer');
+}
+
+// ── Admin Accounts (superuser-only) ──
+async function throwApiError(res: Response, fallback: string): Promise<never> {
+  const data = await res.json().catch(() => ({} as Record<string, unknown>));
+  const detail = typeof data.detail === 'string'
+    ? data.detail
+    : Object.values(data).flat().filter(v => typeof v === 'string').join(' ');
+  throw new Error(detail || fallback);
+}
+
+export async function fetchAdmins(): Promise<AdminUser[]> {
+  const res = await authFetch(getApiUrl('/api/admins/'));
+  if (!res.ok) await throwApiError(res, 'Failed to fetch admins');
+  return await res.json();
+}
+
+export async function createAdmin(data: {
+  username: string;
+  password: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  is_superuser?: boolean;
+}): Promise<AdminUser> {
+  const res = await authFetch(getApiUrl('/api/admins/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) await throwApiError(res, 'Failed to create admin');
+  return await res.json();
+}
+
+export async function updateAdmin(
+  id: number,
+  data: Partial<Pick<AdminUser, 'first_name' | 'last_name' | 'email' | 'is_superuser' | 'is_active'>> & { password?: string }
+): Promise<AdminUser> {
+  const res = await authFetch(getApiUrl(`/api/admins/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) await throwApiError(res, 'Failed to update admin');
+  return await res.json();
+}
+
+export async function deleteAdmin(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/admins/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) await throwApiError(res, 'Failed to delete admin');
 }

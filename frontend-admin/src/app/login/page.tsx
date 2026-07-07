@@ -51,9 +51,12 @@ export default function LoginPage() {
         boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
         border: '1px solid var(--line)'
       }}>
-        <div className="admin-brand" style={{justifyContent: 'center', marginBottom: 32}}>
-          Kushmud<span className="dot" style={{display:'inline-block', width:6, height:6, borderRadius:'50%', background:'var(--clay)', transform:'translateY(-3px)'}}></span>
-          <span className="tag" style={{marginLeft: 8}}>Admin</span>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 1, marginBottom: 32, color: 'var(--ink)'}}>
+          <div style={{display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: 'var(--serif)', fontSize: 22, letterSpacing: '-0.02em'}}>
+            Kushmud
+            <span style={{display:'inline-block', width:6, height:6, borderRadius:'50%', background:'var(--clay)', transform:'translateY(-3px)'}}></span>
+          </div>
+          <span style={{fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, lineHeight: 1}}>Travel &amp; Tourism</span>
         </div>
         
         <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: 20}}>

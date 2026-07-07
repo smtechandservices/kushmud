@@ -15,5 +15,6 @@
   { "ic": "users",    "label": "Careers",                           "href": "/careers" },
   { "sec": "Insights" },
   { "ic": "chart",    "label": "Analytics",                         "href": "/analytics" },
-  { "ic": "settings", "label": "Settings",                          "href": "/settings" }
+  { "ic": "settings", "label": "Settings",                          "href": "/settings" },
+  { "ic": "shield",   "label": "Manage Admins", "superuserOnly": true, "href": "/admins" }
 ]

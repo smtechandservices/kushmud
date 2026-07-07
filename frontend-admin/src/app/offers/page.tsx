@@ -3,21 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
-import { fetchOffers, createOffer, deleteOffer, Offer } from '@/lib/data';
+import { fetchOffers, createOffer, updateOffer, deleteOffer, Offer } from '@/lib/data';
+
+const BLANK_OFFER = {
+  id: '',
+  tag: 'Early Bird',
+  title: '',
+  sub: '',
+  code: '',
+  img: '',
+  accent: '#d4a853',
+};
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [newOffer, setNewOffer] = useState({
-    id: '',
-    tag: 'Early Bird',
-    title: '',
-    sub: '',
-    code: '',
-    img: '',
-    accent: '#d4a853',
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newOffer, setNewOffer] = useState(BLANK_OFFER);
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
@@ -33,19 +36,32 @@ export default function OffersPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingId(null);
+    setNewOffer(BLANK_OFFER);
+    setShowModal(true);
+  };
+
+  const openEditModal = (o: Offer) => {
+    setEditingId(o.id);
+    setNewOffer({ id: o.id, tag: o.tag, title: o.title, sub: o.sub, code: o.code, img: o.img, accent: o.accent });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createOffer(newOffer);
+      if (editingId) {
+        await updateOffer(editingId, newOffer);
+      } else {
+        await createOffer(newOffer);
+      }
       setShowModal(false);
-      setNewOffer({
-        id: '', tag: 'Early Bird', title: '', sub: '', code: '',
-        img: '',
-        accent: '#d4a853',
-      });
+      setEditingId(null);
+      setNewOffer(BLANK_OFFER);
       await loadData();
     } catch (e) {
-      alert('Failed to create offer');
+      alert(editingId ? 'Failed to update offer' : 'Failed to create offer');
     }
   };
 
@@ -85,7 +101,7 @@ export default function OffersPage() {
               style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
             />
           </div>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
+          <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
             <Icon name="plus" size={13}/> New offer
           </button>
         </div>
@@ -153,7 +169,10 @@ export default function OffersPage() {
                         }}>{o.code}</code>
                       </td>
                       <td style={{textAlign:'right'}}>
-                        <button className="btn btn-sm btn-ghost" style={{padding:'4px 8px', color:'#c79a4a'}} onClick={() => handleDelete(o.id)}>
+                        <button className="btn btn-sm btn-ghost" style={{margin:2, padding:'4px 8px'}} onClick={() => openEditModal(o)}>
+                          Edit
+                        </button>
+                        <button className="btn btn-sm btn-ghost" style={{margin:2, padding:'4px 8px', color:'#c79a4a'}} onClick={() => handleDelete(o.id)}>
                           Delete
                         </button>
                       </td>
@@ -166,7 +185,7 @@ export default function OffersPage() {
         </div>
       </main>
 
-      {/* ── Create Offer Modal ── */}
+      {/* ── Create / Edit Offer Modal ── */}
       {showModal && (
         <div style={{
           position:'fixed', inset:0, background:'rgba(28,25,22,0.6)',
@@ -178,12 +197,12 @@ export default function OffersPage() {
             borderRadius:8, padding:32, maxWidth:520, width:'100%',
             boxShadow:'0 20px 40px rgba(0,0,0,0.15)', maxHeight:'90vh', overflowY:'auto'
           }}>
-            <h3 style={{fontSize:24, marginBottom:20}}>New Promotional Offer</h3>
-            <form onSubmit={handleCreate} style={{display:'flex', flexDirection:'column', gap:16}}>
+            <h3 style={{fontSize:24, marginBottom:20}}>{editingId ? 'Edit Promotional Offer' : 'New Promotional Offer'}</h3>
+            <form onSubmit={handleSubmit} style={{display:'flex', flexDirection:'column', gap:16}}>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
                   <label>Offer ID (slug)</label>
-                  <input required placeholder="monsoon-15" value={newOffer.id} onChange={e => setNewOffer({...newOffer, id: e.target.value})}/>
+                  <input required disabled={!!editingId} placeholder="monsoon-15" value={newOffer.id} onChange={e => setNewOffer({...newOffer, id: e.target.value})}/>
                 </div>
                 <div className="field-group">
                   <label>Tag</label>
@@ -219,8 +238,8 @@ export default function OffersPage() {
                 <input required placeholder="https://images.unsplash.com/…" value={newOffer.img} onChange={e => setNewOffer({...newOffer, img: e.target.value})}/>
               </div>
               <div style={{display:'flex', justifyContent:'flex-end', gap:12, marginTop:12}}>
-                <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Create Offer</button>
+                <button type="button" className="btn btn-ghost" onClick={() => { setShowModal(false); setEditingId(null); }}>Cancel</button>
+                <button type="submit" className="btn btn-primary">{editingId ? 'Save Changes' : 'Create Offer'}</button>
               </div>
             </form>
           </div>

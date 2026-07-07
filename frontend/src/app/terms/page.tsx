@@ -40,7 +40,7 @@ export default function TermsPage() {
             <p>Comprehensive travel insurance is mandatory for all Kushmud travelers. Your policy must cover medical expenses, personal accident, and repatriation. We recommend a policy that also covers trip cancellation.</p>
           </section>
 
-          <div style={{marginTop: 80, padding: '32px', borderTop: '1px solid var(--line)', fontSize: 14, color: 'var(--muted)'}}>
+          <div style={{paddingTop: 24, borderTop: '1px solid var(--line)', fontSize: 14, color: 'var(--muted)'}}>
             Last updated: May 11, 2026. For questions regarding these terms, please contact legal@kushmud.com.
           </div>
         </div>

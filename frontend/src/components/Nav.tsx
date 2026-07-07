@@ -38,12 +38,14 @@ export const Nav: React.FC = () => {
           <Link href="/destinations" className={pathname === '/destinations' ? 'active' : ''}>Destinations</Link>
           <Link href="/stories" className={pathname === '/stories' ? 'active' : ''}>Stories</Link>
           <Link href="/about" className={pathname === '/about' ? 'active' : ''}>About</Link>
+          {customer ? (
+            <Link href="/my-enquiries" style={{fontSize:13, color: pathname === '/my-enquiries' ? 'var(--clay)' : 'var(--ink-2)'}}>My Enquiries</Link>
+          ) : null}
         </div>
         <div className="nav-actions" style={{display:'flex', alignItems:'center', gap:14}}>
           {customer ? (
             <>
-              <span style={{fontSize:13, color:'var(--ink-2)'}}>Hi, {customer.name.split(' ')[0]}</span>
-              <button onClick={handleLogout} className="btn btn-ghost btn-sm">Log out</button>
+              <Link href="/profile" style={{fontSize:13, color:'var(--ink-2)', borderBottom: '2px solid var(--clay)', padding: 4}}>Hi, {customer.name.split(' ')[0]}</Link>
             </>
           ) : (
             <Link href="/login" className="btn btn-ghost btn-sm">Log in</Link>
@@ -51,6 +53,9 @@ export const Nav: React.FC = () => {
           <Link href="/packages" className="btn btn-primary btn-sm">
             Plan a trip
           </Link>
+          {customer ? (
+            <button onClick={handleLogout} className="btn btn-ghost btn-sm">Log out</button>
+          ) : null}
         </div>
       </div>
     </nav>

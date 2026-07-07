@@ -142,9 +142,9 @@ export default function SettingsPage() {
               <p>{loadError}</p>
             </div>
           ) : (
-            <div style={{display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 560}}>
+            <div style={{display: 'flex', gap: 24, flexWrap: 'wrap', maxWidth: 1100}}>
               {/* Profile panel */}
-              <div className="panel">
+              <div className="panel" style={{flex: 1, minWidth: 400}}>
                 <div className="panel-head">
                   <h4>Profile</h4>
                 </div>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Change password panel */}
-              <div className="panel">
+              <div className="panel" style={{flex: 1, minWidth: 400}}>
                 <div className="panel-head">
                   <h4>Change Password</h4>
                 </div>

@@ -45,6 +45,18 @@ class Package(models.Model):
     def __str__(self):
         return self.title
 
+class Favorite(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='favorites')
+    package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('customer', 'package')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.customer} likes {self.package_id}"
+
 class PackageReview(models.Model):
     package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='review_entries')
     name = models.CharField(max_length=100)
@@ -91,6 +103,7 @@ class Testimonial(models.Model):
 
 class Booking(models.Model):
     id = models.CharField(max_length=20, primary_key=True)  # e.g., WF-2841
+    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL, related_name='bookings')
     name = models.CharField(max_length=100)
     avatar = models.TextField(default="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop")
     pkg = models.CharField(max_length=200)  # package title

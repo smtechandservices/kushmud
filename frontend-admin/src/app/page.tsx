@@ -252,24 +252,21 @@ export default function AdminDashboard() {
             <table className="dtable">
               <thead>
                 <tr>
-                  <th><input type="checkbox" style={{margin:0}} readOnly/></th>
                   <th>Reference</th>
                   <th>Customer</th>
                   <th>Package</th>
                   <th>Dates</th>
                   <th>Status</th>
                   <th style={{textAlign:'right'}}>Total</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {filteredBookings.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{textAlign:'center', color:'var(--muted)', padding:24}}>No bookings match your search.</td>
+                    <td colSpan={6} style={{textAlign:'center', color:'var(--muted)', padding:24}}>No bookings match your search.</td>
                   </tr>
                 ) : filteredBookings.map(b => (
                   <tr key={b.id}>
-                    <td><input type="checkbox" style={{margin:0}} readOnly/></td>
                     <td><span style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink)'}}>{b.id}</span></td>
                     <td>
                       <div className="who">
@@ -303,7 +300,6 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>₹{b.total.toLocaleString()}</td>
-                    <td style={{textAlign:'right', color:'var(--muted)'}}>···</td>
                   </tr>
                 ))}
               </tbody>

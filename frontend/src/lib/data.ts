@@ -75,6 +75,7 @@ export interface Booking {
   phone?: string | null;
   pax?: number;
   remarks?: string | null;
+  created_at?: string;
 }
 
 export interface FAQ {
@@ -160,6 +161,7 @@ export function customerLogout() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(CUSTOMER_TOKEN_KEY);
   localStorage.removeItem(CUSTOMER_REFRESH_KEY);
+  favoriteIdsCache = null;
 }
 
 export async function customerSignup(data: { name: string; email?: string; phone?: string; password: string }): Promise<Customer> {
@@ -195,6 +197,87 @@ export async function fetchCustomerMe(): Promise<Customer> {
   });
   if (!res.ok) throw new Error('Failed to fetch profile');
   return await res.json();
+}
+
+export async function updateCustomerMe(data: Partial<Pick<Customer, 'name' | 'email' | 'phone'>>): Promise<Customer> {
+  const res = await fetch(getApiUrl('/api/customers/me/'), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getCustomerAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    const message = Object.values(body).flat().join(' ') || 'Failed to update profile.';
+    throw new Error(message);
+  }
+  return body;
+}
+
+export interface NewsletterStatus {
+  subscribed: boolean;
+  email: string | null;
+}
+
+export async function fetchNewsletterStatus(): Promise<NewsletterStatus> {
+  const res = await fetch(getApiUrl('/api/customers/me/newsletter/'), {
+    headers: getCustomerAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch newsletter status');
+  return await res.json();
+}
+
+export async function subscribeToCustomerNewsletter(): Promise<NewsletterStatus> {
+  const res = await fetch(getApiUrl('/api/customers/me/newsletter/'), {
+    method: 'POST',
+    headers: getCustomerAuthHeaders(),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.detail || 'Failed to subscribe.');
+  return body;
+}
+
+export async function unsubscribeFromCustomerNewsletter(): Promise<NewsletterStatus> {
+  const res = await fetch(getApiUrl('/api/customers/me/newsletter/'), {
+    method: 'DELETE',
+    headers: getCustomerAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to unsubscribe.');
+  return await res.json();
+}
+
+export interface Favorite {
+  id: number;
+  package: Package;
+  created_at: string;
+}
+
+let favoriteIdsCache: Promise<string[]> | null = null;
+
+export function fetchFavorites(): Promise<Favorite[]> {
+  if (!isCustomerLoggedIn()) return Promise.resolve([]);
+  return fetch(getApiUrl('/api/favorites/'), { headers: getCustomerAuthHeaders() })
+    .then(res => (res.ok ? res.json() : []))
+    .catch(() => []);
+}
+
+export function fetchFavoriteIds(): Promise<string[]> {
+  if (!isCustomerLoggedIn()) return Promise.resolve([]);
+  if (!favoriteIdsCache) {
+    favoriteIdsCache = fetchFavorites().then((favorites: Favorite[]) => favorites.map(f => String(f.package.id)));
+  }
+  return favoriteIdsCache;
+}
+
+export async function toggleFavorite(packageId: string): Promise<boolean> {
+  const res = await fetch(getApiUrl('/api/favorites/toggle/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getCustomerAuthHeaders() },
+    body: JSON.stringify({ package: packageId }),
+  });
+  if (!res.ok) throw new Error('Failed to update favorite');
+  const body = await res.json();
+  favoriteIdsCache = null;
+  return body.favorited;
 }
 
 export async function fetchPackages(): Promise<Package[]> {
@@ -275,11 +358,18 @@ export async function subscribeToNewsletter(email: string): Promise<void> {
 export async function createBooking(bookingData: any): Promise<any> {
   const res = await fetch(getApiUrl('/api/bookings/'), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getCustomerAuthHeaders() },
     body: JSON.stringify(bookingData),
   });
   if (!res.ok) throw new Error('Failed to submit booking');
   return await res.json();
+}
+
+export function fetchMyBookings(): Promise<Booking[]> {
+  if (!isCustomerLoggedIn()) return Promise.resolve([]);
+  return fetch(getApiUrl('/api/bookings/mine/'), { headers: getCustomerAuthHeaders() })
+    .then(res => (res.ok ? res.json() : []))
+    .catch(() => []);
 }
 
 export async function createContactInquiry(inquiryData: any): Promise<any> {

@@ -5,10 +5,97 @@ import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
 import { fetchBookings, updateBookingStatus, Booking } from '@/lib/data';
 
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div style={{display: 'flex', justifyContent: 'space-between', gap: 16, padding: '10px 0', borderBottom: '1px solid var(--line)'}}>
+      <span style={{color: 'var(--muted)', fontSize: 13}}>{label}</span>
+      <span style={{fontSize: 13, textAlign: 'right'}}>{value}</span>
+    </div>
+  );
+}
+
+interface BookingDetailsModalProps {
+  booking: Booking;
+  isBusy: boolean;
+  onClose: () => void;
+  onConfirm: (id: string) => void;
+  onCancel: (id: string) => void;
+}
+
+function BookingDetailsModal({ booking, isBusy, onClose, onConfirm, onCancel }: BookingDetailsModalProps) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 200, padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 8, padding: 32, maxWidth: 440, width: '100%'}}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)', marginBottom: 6}}>{booking.id}</div>
+        <h3 style={{fontSize: 22, marginBottom: 16}}>{booking.pkg}</h3>
+
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <DetailRow label="Status" value={<span className={'status ' + booking.status}><span className="d"></span>{booking.status}</span>} />
+          <DetailRow label="Dates" value={booking.dates} />
+          <DetailRow label="Travelers" value={`${booking.pax ?? 1} traveler${(booking.pax ?? 1) === 1 ? '' : 's'}`} />
+          <DetailRow label="Customer" value={booking.name} />
+          {booking.email && <DetailRow label="Email" value={booking.email} />}
+          {booking.phone && <DetailRow label="Phone" value={booking.phone} />}
+          <DetailRow label="Total" value={`₹${booking.total.toLocaleString()}`} />
+          {booking.created_at && (
+            <DetailRow
+              label="Submitted"
+              value={new Date(booking.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            />
+          )}
+          {booking.remarks && (
+            <div style={{padding: '10px 0'}}>
+              <div style={{color: 'var(--muted)', fontSize: 13, marginBottom: 4}}>Remarks</div>
+              <div style={{fontSize: 13, lineHeight: 1.5}}>{booking.remarks}</div>
+            </div>
+          )}
+        </div>
+
+        <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 24, gap: 10}}>
+          <div style={{display: 'flex', gap: 10}}>
+            {booking.status === 'pending' && (
+              <>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  style={{background: 'rgba(199,154,74,0.1)', color: '#c79a4a'}}
+                  disabled={isBusy}
+                  onClick={() => onCancel(booking.id)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-sm btn-primary"
+                  disabled={isBusy}
+                  onClick={() => onConfirm(booking.id)}
+                >
+                  Confirm
+                </button>
+              </>
+            )}
+            <button className="btn btn-sm btn-ghost" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
 
   const loadData = async () => {
     try {
@@ -37,11 +124,15 @@ export default function BookingsPage() {
   });
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
+    setIsBusy(true);
     try {
       await updateBookingStatus(id, newStatus);
       await loadData();
+      setSelectedBooking(null);
     } catch (e) {
       alert('Failed to update booking status');
+    } finally {
+      setIsBusy(false);
     }
   };
 
@@ -84,6 +175,7 @@ export default function BookingsPage() {
                     <th>Dates</th>
                     <th>Status</th>
                     <th style={{textAlign:'right'}}>Total</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,11 +183,11 @@ export default function BookingsPage() {
                     <tr key={b.id}>
                       <td><span style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink)'}}>{b.id}</span></td>
                       <td>
-                        <div className="who">
+                        <div className="who" style={{cursor:'pointer'}} onClick={() => setSelectedBooking(b)}>
                           <div className="ava" style={{ backgroundImage:`url(${b.avatar})` }}></div>
                           <span>{b.name}</span>
                           {b.remarks && (
-                            <span title={b.remarks} style={{display:'inline-flex', color:'var(--muted)', cursor:'help'}}>
+                            <span title={b.remarks} style={{display:'inline-flex', color:'var(--muted)', cursor:'pointer'}}>
                               <Icon name="book" size={12}/>
                             </span>
                           )}
@@ -105,34 +197,17 @@ export default function BookingsPage() {
                       <td style={{color:'var(--ink-2)'}}>{b.pkg}</td>
                       <td style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink-2)'}}>{b.dates}</td>
                       <td>
-                        <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                          <span className={'status ' + b.status}><span className="d"></span>{b.status}</span>
-                          {b.status === 'pending' && (
-                            <div style={{display:'inline-flex', gap:4}}>
-                              <button 
-                                className="btn btn-sm btn-ghost" 
-                                style={{padding: '2px 6px', fontSize: 10, background: 'rgba(31,122,77,0.1)', color: 'var(--forest)', height: 'auto'}}
-                                onClick={() => handleStatusUpdate(b.id, 'confirmed')}
-                              >
-                                Confirm
-                              </button>
-                              <button 
-                                className="btn btn-sm btn-ghost" 
-                                style={{padding: '2px 6px', fontSize: 10, background: 'rgba(199,154,74,0.1)', color: '#c79a4a', height: 'auto'}}
-                                onClick={() => handleStatusUpdate(b.id, 'cancelled')}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                        <span className={'status ' + b.status}><span className="d"></span>{b.status}</span>
                       </td>
                       <td style={{textAlign:'right', fontFamily:'var(--serif)', fontSize:15, letterSpacing:'-0.005em'}}>₹{b.total.toLocaleString()}</td>
+                      <td style={{textAlign:'right'}}>
+                        <button className="btn btn-sm btn-ghost" onClick={() => setSelectedBooking(b)}>View</button>
+                      </td>
                     </tr>
                   ))}
                   {filteredBookings.length === 0 && (
                     <tr>
-                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
+                      <td colSpan={8} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
                         {bookings.length === 0 ? 'No bookings found.' : 'No bookings match your search.'}
                       </td>
                     </tr>
@@ -143,6 +218,16 @@ export default function BookingsPage() {
           </div>
         </div>
       </main>
+
+      {selectedBooking && (
+        <BookingDetailsModal
+          booking={selectedBooking}
+          isBusy={isBusy}
+          onClose={() => setSelectedBooking(null)}
+          onConfirm={id => handleStatusUpdate(id, 'confirmed')}
+          onCancel={id => handleStatusUpdate(id, 'cancelled')}
+        />
+      )}
     </div>
   );
 }

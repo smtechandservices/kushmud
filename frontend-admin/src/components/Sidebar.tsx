@@ -22,10 +22,10 @@ export function Sidebar() {
     <aside className="admin-side">
       <div className="admin-brand">
         Kushmud<span className="dot" style={{display:'inline-block', width:6, height:6, borderRadius:'50%', background:'var(--clay)', transform:'translateY(-3px)'}}></span>
-        <span className="tag" style={{marginLeft:'auto'}}>Admin</span>
+        <span className="tag" style={{marginLeft:'auto'}}>{me?.is_superuser ? 'Super Admin' : 'Admin'}</span>
       </div>
       <nav className="admin-nav">
-        {navItems.map((it, i) => {
+        {navItems.filter(it => !it.superuserOnly || me?.is_superuser).map((it, i) => {
           if (it.sec) {
             return <div key={i} className="admin-nav-section">{it.sec}</div>;
           }
@@ -45,7 +45,7 @@ export function Sidebar() {
           <div className="admin-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--clay)', color: 'white', fontFamily: 'var(--mono)', fontSize: 12 }}>{initials}</div>
           <div>
             <div className="name">{displayName || 'Loading…'}</div>
-            <div className="role">Admin</div>
+            <div className="role">{me?.is_superuser ? 'Super Admin' : 'Admin'}</div>
           </div>
         </div>
         <button 

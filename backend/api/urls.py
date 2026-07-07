@@ -5,7 +5,8 @@ from api.views import (
     TestimonialViewSet, BookingViewSet, ContactInquiryViewSet, StatsView,
     FAQViewSet, StoryViewSet, NewsletterSubscriberViewSet, MeView, SiteStatsView,
     ChangePasswordView, CustomerViewSet, CustomerSignupView, CustomerLoginView,
-    CustomerMeView, JobOpeningViewSet, PackageReviewViewSet
+    CustomerMeView, JobOpeningViewSet, PackageReviewViewSet, FavoriteViewSet,
+    CustomerNewsletterView, AnalyticsView, AdminUserViewSet
 )
 
 router = DefaultRouter()
@@ -21,14 +22,18 @@ router.register(r'stories', StoryViewSet, basename='story')
 router.register(r'newsletter-subscribers', NewsletterSubscriberViewSet, basename='newsletter-subscriber')
 router.register(r'customers', CustomerViewSet, basename='customer')
 router.register(r'job-openings', JobOpeningViewSet, basename='job-opening')
+router.register(r'favorites', FavoriteViewSet, basename='favorite')
+router.register(r'admins', AdminUserViewSet, basename='admin')
 
 urlpatterns = [
     path('stats/', StatsView.as_view(), name='stats'),
+    path('analytics/', AnalyticsView.as_view(), name='analytics'),
     path('site-stats/', SiteStatsView.as_view(), name='site-stats'),
     path('me/', MeView.as_view(), name='me'),
     path('me/password/', ChangePasswordView.as_view(), name='change-password'),
     path('customers/signup/', CustomerSignupView.as_view(), name='customer-signup'),
     path('customers/login/', CustomerLoginView.as_view(), name='customer-login'),
     path('customers/me/', CustomerMeView.as_view(), name='customer-me'),
+    path('customers/me/newsletter/', CustomerNewsletterView.as_view(), name='customer-newsletter'),
     path('', include(router.urls)),
 ]

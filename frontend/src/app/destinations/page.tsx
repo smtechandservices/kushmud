@@ -8,9 +8,13 @@ import { Icon } from '@/components/Icon';
 
 export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [featuredIdx, setFeaturedIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchDestinations().then(setDestinations).catch(console.error);
+    fetchDestinations().then(data => {
+      setDestinations(data);
+      setFeaturedIdx(data.length > 0 ? Math.floor(Math.random() * data.length) : null);
+    }).catch(console.error);
   }, []);
 
   return (
@@ -25,16 +29,22 @@ export default function DestinationsPage() {
 
       <div className="container" style={{padding: '64px 40px 96px'}}>
         <div className="dest-grid">
-          {destinations.map((d, i) => (
-            <Link key={i} href="/packages" className={'dest-card ' + (d.size || '')}
-                 style={{ backgroundImage: `url(${d.img})`, gridRow: d.size === 'lg' ? 'span 2' : undefined }}>
+          {(featuredIdx === null ? destinations : [
+            destinations[featuredIdx],
+            ...destinations.filter((_, i) => i !== featuredIdx),
+          ]).map((d, i) => {
+            const isLg = i === 0;
+            return (
+            <Link key={d.name} href="/packages" className={'dest-card ' + (isLg ? 'lg' : '')}
+                 style={{ backgroundImage: `url(${d.img})`, gridRow: isLg ? 'span 2' : undefined }}>
               <div className="dest-content">
                 <span className="eyebrow" style={{color:'rgba(255,255,255,0.85)'}}>{d.tag}</span>
                 <h3>{d.name}</h3>
                 <div className="count">{d.count} curated trips</div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <div style={{marginTop: 96, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64}}>

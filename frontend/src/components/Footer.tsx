@@ -14,6 +14,8 @@ export const Footer: React.FC = () => {
               </span>
             </div>
             <p className="footer-tag">Considered travel across India and the UAE for people who'd rather pack light and go slow. Curated since 2017.</p>
+            <br />
+            <span>Safe Travels</span>
           </div>
           <div className="footer-col">
             <h5>Travel</h5>
@@ -41,8 +43,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
         <div className="footer-bot">
-          <span>© 2026 Kushmud Travel Co. — Lisbon &amp; Brooklyn</span>
-          <span>ATOL 11423 · IATA 12-3 4567</span>
+          <span>© 2026 Kushmud &nbsp; Travel &amp; Tourism</span>
         </div>
       </div>
     </footer>
