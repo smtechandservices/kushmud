@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Suspense, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
@@ -55,8 +56,12 @@ function LoginContent() {
 
       <div className="auth-panel">
         <div className="auth-panel-inner">
-          <div className="auth-brand">
-            Kushmud<span className="dot" />
+          <div className="auth-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+            <Image src="/logo-tp.png" alt="Kushmud" width={508} height={491} style={{ height: 96, width: 'auto', marginLeft: -24 }} />
+            <span style={{ display: 'flex', flexDirection: 'column' }}>
+              Kushmud
+              <span className="brand-sub" style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--muted)' }}>Travel &amp; Tourism</span>
+            </span>
           </div>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>Welcome back.</h1>
           <p style={{ color: 'var(--muted)', marginBottom: 36, fontSize: 15 }}>Log in to pick up where you left off.</p>

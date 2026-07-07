@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from api.models import (
     Package, Destination, Offer, Testimonial, Booking, ContactInquiry,
-    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite
+    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
 )
 
 class PackageSerializer(serializers.ModelSerializer):
@@ -71,6 +71,12 @@ class NewsletterSubscriberSerializer(serializers.ModelSerializer):
         model = NewsletterSubscriber
         fields = '__all__'
         read_only_fields = ['subscribed_at']
+
+class FlyerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Flyer
+        fields = '__all__'
+        read_only_fields = ['created_at']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

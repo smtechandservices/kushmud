@@ -18,8 +18,15 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kushmud : Travel and Tourism",
-  description: "Considered travel across India and the UAE.",
+  title: "Kushmud Admin",
+  description: "Staff admin panel for Kushmud Travel and Tourism.",
+  icons: {
+    icon: "/logo.png",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 import { AuthGuard } from "@/components/AuthGuard";

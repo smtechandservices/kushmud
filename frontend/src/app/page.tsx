@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { PackageCard } from '@/components/PackageCard';
 import {
-  fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials, fetchSiteStats,
+  fetchPackages, fetchOffers, fetchDestinations, fetchTestimonials, fetchSiteStats, fetchFlyers,
   subscribeToNewsletter, isCustomerLoggedIn, fetchNewsletterStatus,
-  Package, Offer, Destination, Testimonial, SiteStats
+  Package, Offer, Destination, Testimonial, SiteStats, Flyer
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
@@ -34,6 +34,7 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [testi, setTesti] = useState(0);
   const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [flyers, setFlyers] = useState<Flyer[]>([]);
   const [destOrder, setDestOrder] = useState<number[]>([]);
   const [destSwapPos, setDestSwapPos] = useState<number | null>(null);
   const destSwapCursor = useRef(0);
@@ -59,6 +60,10 @@ export default function Home() {
       try {
         const stats = await fetchSiteStats();
         setSiteStats(stats);
+      } catch (e) { console.error(e); }
+      try {
+        const fly = await fetchFlyers();
+        if (fly && fly.length > 0) setFlyers(fly);
       } catch (e) { console.error(e); }
     }
     loadData();
@@ -98,6 +103,10 @@ export default function Home() {
   const featured = packages.filter(p => p.featured).slice(0, 3);
   const featuredList = featured.length > 0 ? featured : packages.slice(0, 3);
   const trendingList = siteStats?.trending ?? [];
+  const FLYER_LOOP_MIN = 8;
+  const flyerLoop = flyers.length > 0
+    ? Array.from({ length: Math.ceil(FLYER_LOOP_MIN / flyers.length) }, () => flyers).flat()
+    : [];
 
 
   /* ── searchbar state ── */
@@ -432,6 +441,31 @@ export default function Home() {
         </section>
       )}
 
+      {flyers.length > 0 && (
+        <section className="section flyers">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <span className="eyebrow">— Flyers</span>
+                <h2>Fresh <em style={{fontStyle:'italic'}}>deals & drops</em></h2>
+              </div>
+            </div>
+          </div>
+          <div className="flyers-marquee">
+            <div
+              className="flyers-track"
+              style={{ animationDuration: `${flyerLoop.length * 4}s` }}
+            >
+              {[...flyerLoop, ...flyerLoop].map((f, i) => (
+                <div key={`${f.id}-${i}`} className="flyer-card">
+                  <div className="flyer-img" style={{ backgroundImage: `url(${f.img})` }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="offers">
         <div className="container">
           <div className="section-head">
@@ -547,7 +581,7 @@ export default function Home() {
                 </div>
                 &nbsp;
                 <button
-                  style={{marginLeft: 8, marginTop: 8}}
+                  style={{marginLeft: 8}}
                   className="testi-next"
                   onClick={() => setTesti((testi + 1) % testimonials.length)}
                 >

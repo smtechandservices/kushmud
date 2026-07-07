@@ -21,6 +21,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Kushmud : Travel and Tourism",
   description: "Considered travel across India and the UAE.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -168,6 +168,17 @@ class NewsletterSubscriber(models.Model):
     def __str__(self):
         return self.email
 
+class Flyer(models.Model):
+    img = models.TextField()
+    is_visible = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Flyer {self.pk}"
+
 class ContactInquiry(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)

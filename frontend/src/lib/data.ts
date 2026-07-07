@@ -105,6 +105,13 @@ export interface JobOpening {
   order: number;
 }
 
+export interface Flyer {
+  id: number;
+  img: string;
+  is_visible: boolean;
+  created_at: string;
+}
+
 export interface TrendingPackage {
   id: string;
   title: string;
@@ -343,6 +350,12 @@ export async function fetchJobOpenings(): Promise<JobOpening[]> {
 export async function fetchSiteStats(): Promise<SiteStats> {
   const res = await fetch(getApiUrl('/api/site-stats/'));
   if (!res.ok) throw new Error('Failed to fetch site stats');
+  return await res.json();
+}
+
+export async function fetchFlyers(): Promise<Flyer[]> {
+  const res = await fetch(getApiUrl('/api/flyers/'));
+  if (!res.ok) throw new Error('Failed to fetch flyers');
   return await res.json();
 }
 

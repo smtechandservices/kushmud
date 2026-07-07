@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon } from './Icon';
@@ -26,7 +27,8 @@ export const Nav: React.FC = () => {
   return (
     <nav className="nav">
       <div className="nav-inner">
-        <Link href="/" className="brand">
+        <Link href="/" className="brand" style={{display:'flex', alignItems:'center', gap:10}}>
+          <Image src="/logo-tp.png" alt="Kushmud" width={508} height={491} style={{ height: 64, width: 'auto' }} />
           <span className="brand-wrap">
             <span className="brand-name">Kushmud</span>
             <span className="brand-sub">Travel &amp; Tourism</span>

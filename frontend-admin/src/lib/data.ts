@@ -111,6 +111,13 @@ export interface NewsletterSubscriber {
   subscribed_at: string;
 }
 
+export interface Flyer {
+  id: number;
+  img: string;
+  is_visible: boolean;
+  created_at: string;
+}
+
 export interface AdminUser {
   id: number;
   username: string;
@@ -323,6 +330,40 @@ export async function deleteOffer(id: string): Promise<void> {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete offer');
+}
+
+// ── Flyers ──
+export async function fetchFlyers(): Promise<Flyer[]> {
+  const res = await authFetch(getApiUrl('/api/flyers/'));
+  if (!res.ok) throw new Error('Failed to fetch flyers');
+  return await res.json();
+}
+
+export async function createFlyer(data: { img: string }): Promise<Flyer> {
+  const res = await authFetch(getApiUrl('/api/flyers/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create flyer');
+  return await res.json();
+}
+
+export async function updateFlyer(id: number, data: Partial<Pick<Flyer, 'img' | 'is_visible'>>): Promise<Flyer> {
+  const res = await authFetch(getApiUrl(`/api/flyers/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update flyer');
+  return await res.json();
+}
+
+export async function deleteFlyer(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/flyers/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete flyer');
 }
 
 // ── Destinations ──

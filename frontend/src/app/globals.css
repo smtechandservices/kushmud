@@ -99,7 +99,7 @@ button { font-family: inherit; cursor: pointer; }
 .nav-inner {
   max-width: 1480px;
   margin: 0 auto;
-  padding: 18px 40px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   gap: 40px;
@@ -700,7 +700,7 @@ button { font-family: inherit; cursor: pointer; }
   margin-top: 2px;
 }
 .testi-nav {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 48px;
@@ -1664,6 +1664,42 @@ button { font-family: inherit; cursor: pointer; }
   justify-content: space-between;
 }
 .trend-price { font-family: var(--serif); font-size: 18px; letter-spacing: -0.01em; }
+
+/* ─── Flyers ─────────────────────────────────────── */
+.flyers { padding-top: 0; }
+.flyers-marquee {
+  overflow: hidden;
+  width: 100%;
+}
+.flyers-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation-name: flyers-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.flyers-track:hover { animation-play-state: paused; }
+@keyframes flyers-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.flyer-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: 320px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.flyer-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.flyer-img {
+  aspect-ratio: 3/4;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--sand-2);
+}
 
 /* ─── Offers ─────────────────────────────────────── */
 .offers {

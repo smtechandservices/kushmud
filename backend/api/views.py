@@ -13,7 +13,7 @@ from django.utils import timezone
 from api.authentication import CustomerJWTAuthentication
 from api.models import (
     Package, Destination, Offer, Testimonial, Booking, ContactInquiry,
-    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite
+    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
 )
 from django.contrib.auth.models import User
 from api.serializers import (
@@ -21,7 +21,7 @@ from api.serializers import (
     TestimonialSerializer, BookingSerializer, ContactInquirySerializer,
     FAQSerializer, StorySerializer, NewsletterSubscriberSerializer, UserSerializer,
     CustomerSerializer, CustomerSignupSerializer, JobOpeningSerializer, PackageReviewSerializer,
-    FavoriteSerializer, AdminUserSerializer
+    FavoriteSerializer, AdminUserSerializer, FlyerSerializer
 )
 
 class IsSuperUser(permissions.BasePermission):
@@ -77,6 +77,16 @@ class OfferViewSet(viewsets.ModelViewSet):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class FlyerViewSet(viewsets.ModelViewSet):
+    serializer_class = FlyerSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = Flyer.objects.all()
+        if not (self.request.user and self.request.user.is_authenticated):
+            qs = qs.filter(is_visible=True)
+        return qs
 
 class TestimonialViewSet(viewsets.ModelViewSet):
     queryset = Testimonial.objects.all()

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Suspense, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
@@ -54,8 +55,12 @@ function SignupContent() {
 
       <div className="auth-panel">
         <div className="auth-panel-inner">
-          <div className="auth-brand">
-            Kushmud<span className="dot" />
+          <div className="auth-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Image src="/logo-tp.png" alt="Kushmud" width={508} height={491} style={{ height: 96, width: 'auto', marginLeft: -24 }} />
+            <span style={{ display: 'flex', flexDirection: 'column' }}>
+              Kushmud
+              <span className="brand-sub" style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--muted)' }}>Travel &amp; Tourism</span>
+            </span>
           </div>
           <h1 style={{ fontSize: 36, marginBottom: 8 }}>Join Kushmud.</h1>
           <p style={{ color: 'var(--muted)', marginBottom: 36, fontSize: 15 }}>Create an account to start planning your trip.</p>
@@ -129,7 +134,7 @@ function SignupContent() {
       >
         <div className="auth-visual-content">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--serif)', fontSize: 22, alignSelf: 'flex-end' }}>
-            Kushmud<span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--clay)' }} />
+            {/* Kushmud<span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--clay)' }} /> */}
           </div>
           <div className="auth-visual-quote" style={{ alignSelf: 'flex-end', textAlign: 'right' }}>
             "Curated trips across India and the UAE, planned by people who've actually slept there."

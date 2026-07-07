@@ -6,6 +6,7 @@
   { "ic": "users",    "label": "Customers",                         "href": "/customers" },
   { "sec": "Marketing" },
   { "ic": "tag",      "label": "Offers & promotions",               "href": "/offers" },
+  { "ic": "sparkle",  "label": "Flyers",                            "href": "/flyers" },
   { "ic": "globe",    "label": "Destinations",                      "href": "/destinations" },
   { "ic": "mail",     "label": "Newsletters",                       "href": "/newsletters" },
   { "sec": "Content" },
