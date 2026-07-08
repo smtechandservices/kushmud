@@ -246,7 +246,7 @@ export default function Home() {
           />
         )}
         <div className="hero-content">
-          <div className="hero-eyebrow"><span className="line"></span> Kushmud · Spring '26 Collection</div>
+          <div className="hero-eyebrow"><span className="line"></span> Kushmud · '26 Collection</div>
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>
           <p className="hero-sub">Considered itineraries served globally, planned by people who've actually slept in the haveli, taken the desert drive and walked the bazaar.</p>
           <div className="hero-meta">
@@ -391,7 +391,7 @@ export default function Home() {
         <div className="container">
           <div className="section-head">
             <div>
-              <span className="eyebrow">— Spring's quiet picks</span>
+              <span className="eyebrow">— our quiet picks</span>
               <h2>Three trips we'd <em style={{fontStyle:'italic'}}>genuinely</em> book ourselves</h2>
             </div>
             <div className="meta">Hand-selected by our field editors. Updated weekly with available dates and current weather notes.</div>
