@@ -20,6 +20,7 @@ export default function DestinationsPage() {
   const [editingName, setEditingName] = useState<string | null>(null);
   const [newDest, setNewDest] = useState(BLANK_DEST);
   const [searchQuery, setSearchQuery] = useState('');
+  const [regionFilter, setRegionFilter] = useState('All');
 
   const loadData = async () => {
     try {
@@ -78,6 +79,7 @@ export default function DestinationsPage() {
   };
 
   const filteredDestinations = destinations.filter(d => {
+    if (regionFilter !== 'All' && d.region !== regionFilter) return false;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -91,15 +93,30 @@ export default function DestinationsPage() {
       <Sidebar />
       <main className="admin-main">
         <div className="admin-top">
-          <div className="admin-search">
-            <Icon name="search" size={14}/>
-            <input
-              type="text"
-              placeholder="Search destinations…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
-            />
+          <div style={{display:'flex', alignItems:'center', gap:12}}>
+            <div className="admin-search">
+              <Icon name="search" size={14}/>
+              <input
+                type="text"
+                placeholder="Search destinations…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
+              />
+            </div>
+            <select
+              value={regionFilter}
+              onChange={e => setRegionFilter(e.target.value)}
+              style={{
+                padding:'8px 14px', background:'#f4ede0', border:'none', borderRadius:4,
+                fontSize:13, color:'var(--muted)', fontFamily:'var(--sans)', outline:'none'
+              }}
+            >
+              <option value="All">All regions</option>
+              {regions.map(r => (
+                <option key={r.name} value={r.name}>{r.name}</option>
+              ))}
+            </select>
           </div>
           <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
             <Icon name="plus" size={13}/> New destination
@@ -111,7 +128,7 @@ export default function DestinationsPage() {
             <div>
               <h2>Destinations</h2>
               <p className="sub" style={{margin:'6px 0 0'}}>
-                {destinations.length} featured location{destinations.length !== 1 ? 's' : ''}.
+                {filteredDestinations.length} of {destinations.length} featured location{destinations.length !== 1 ? 's' : ''}.
               </p>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={loadData}>Refresh</button>
@@ -127,7 +144,7 @@ export default function DestinationsPage() {
           ) : filteredDestinations.length === 0 ? (
             <div className="panel" style={{padding: 64, textAlign: 'center', color: 'var(--muted)'}}>
               <Icon name="search" size={32} style={{marginBottom: 16, color: 'var(--clay)'}} />
-              <p>No results match your search.</p>
+              <p>No results match your search or filter.</p>
             </div>
           ) : (
             <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:20}}>

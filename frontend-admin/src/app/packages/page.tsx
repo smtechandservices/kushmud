@@ -95,6 +95,7 @@ export default function PackagesPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [destinationFilter, setDestinationFilter] = useState('All');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPkg, setNewPkg] = useState<NewPkgForm>(emptyNewPkg);
   const [creating, setCreating] = useState(false);
@@ -300,6 +301,7 @@ export default function PackagesPage() {
   };
 
   const filteredPackages = packages.filter(p => {
+    if (destinationFilter !== 'All' && p.destination !== destinationFilter) return false;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -315,15 +317,30 @@ export default function PackagesPage() {
       <Sidebar />
       <main className="admin-main">
         <div className="admin-top">
-          <div className="admin-search">
-            <Icon name="search" size={14}/>
-            <input
-              type="text"
-              placeholder="Search packages…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
-            />
+          <div style={{display:'flex', alignItems:'center', gap:12}}>
+            <div className="admin-search">
+              <Icon name="search" size={14}/>
+              <input
+                type="text"
+                placeholder="Search packages…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{border:'none', outline:'none', background:'transparent', font:'inherit', color:'inherit', width:'100%'}}
+              />
+            </div>
+            <select
+              value={destinationFilter}
+              onChange={e => setDestinationFilter(e.target.value)}
+              style={{
+                padding:'8px 14px', background:'#f4ede0', border:'none', borderRadius:4,
+                fontSize:13, color:'var(--muted)', fontFamily:'var(--sans)', outline:'none'
+              }}
+            >
+              <option value="All">All destinations</option>
+              {destinations.map(d => (
+                <option key={d.name} value={d.name}>{d.name}</option>
+              ))}
+            </select>
           </div>
           <button className="btn btn-primary btn-sm" onClick={openCreate}>
             <Icon name="plus" size={13}/> New package
@@ -334,7 +351,9 @@ export default function PackagesPage() {
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:24}}>
             <div>
               <h2>Packages</h2>
-              <p className="sub" style={{margin:'6px 0 0'}}>Manage travel itineraries and pricing.</p>
+              <p className="sub" style={{margin:'6px 0 0'}}>
+                {filteredPackages.length} of {packages.length} package{packages.length !== 1 ? 's' : ''}.
+              </p>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={loadData}>Refresh</button>
           </div>
@@ -393,7 +412,7 @@ export default function PackagesPage() {
                   )}
                   {packages.length > 0 && filteredPackages.length === 0 && (
                     <tr>
-                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No packages match your search.</td>
+                      <td colSpan={7} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>No packages match your search or filter.</td>
                     </tr>
                   )}
                 </tbody>

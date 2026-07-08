@@ -102,6 +102,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [destinationFilter, setDestinationFilter] = useState('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -120,7 +121,12 @@ export default function BookingsPage() {
     loadData();
   }, []);
 
+  const destinationOptions = Array.from(
+    new Set(bookings.map(b => b.destination).filter((d): d is string => !!d))
+  ).sort();
+
   const filteredBookings = bookings.filter(b => {
+    if (destinationFilter !== 'All' && b.destination !== destinationFilter) return false;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -150,14 +156,29 @@ export default function BookingsPage() {
       <Sidebar />
       <main className="admin-main">
         <div className="admin-top">
-          <div className="admin-search">
-            <Icon name="search" size={14}/>
-            <input
-              type="text"
-              placeholder="Search bookings by customer, reference, or package…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+          <div style={{display:'flex', alignItems:'center', gap:12}}>
+            <div className="admin-search">
+              <Icon name="search" size={14}/>
+              <input
+                type="text"
+                placeholder="Search bookings by customer, reference, or package…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              value={destinationFilter}
+              onChange={e => setDestinationFilter(e.target.value)}
+              style={{
+                padding:'8px 14px', background:'#f4ede0', border:'none', borderRadius:4,
+                fontSize:13, color:'var(--muted)', fontFamily:'var(--sans)', outline:'none'
+              }}
+            >
+              <option value="All">All destinations</option>
+              {destinationOptions.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -165,7 +186,9 @@ export default function BookingsPage() {
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:24}}>
             <div>
               <h2>Bookings</h2>
-              <p className="sub" style={{margin:'6px 0 0'}}>Manage all trip reservations and statuses.</p>
+              <p className="sub" style={{margin:'6px 0 0'}}>
+                {filteredBookings.length} of {bookings.length} reservation{bookings.length !== 1 ? 's' : ''}.
+              </p>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={loadData}>Refresh</button>
           </div>
@@ -222,7 +245,7 @@ export default function BookingsPage() {
                   {filteredBookings.length === 0 && (
                     <tr>
                       <td colSpan={10} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
-                        {bookings.length === 0 ? 'No bookings found.' : 'No bookings match your search.'}
+                        {bookings.length === 0 ? 'No bookings found.' : 'No bookings match your search or filter.'}
                       </td>
                     </tr>
                   )}
