@@ -68,12 +68,12 @@ export default function ContactPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Contact</span></div>
-          <h1 style={{fontSize:64}}>Let's talk about<br/><em style={{fontStyle:'italic'}}>your next trip.</em></h1>
+          <h1>Let's talk about<br/><em style={{fontStyle:'italic'}}>your next trip.</em></h1>
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
-        <div style={{display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 100}}>
+      <div className="container page-content">
+        <div className="rgrid" style={{'--cols': '1.2fr 1fr', '--gap': '100px'} as React.CSSProperties}>
           <div>
             {isSuccess ? (
               <div style={{
@@ -101,7 +101,7 @@ export default function ContactPage() {
             ) : null}
 
             <form className="news-form" style={{border: '0', display: 'flex', flexDirection: 'column', gap: 32, padding: '0'}} onSubmit={handleSubmit}>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24}}>
+              <div className="rgrid" style={{'--gap': '24px'} as React.CSSProperties}>
                 <div className="field-group">
                   <label>First name</label>
                   <input 
@@ -206,7 +206,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 20}}>Our studios</h4>
-                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32}}>
+                <div className="rgrid" style={{'--gap': '32px'} as React.CSSProperties}>
                   <div>
                     <h5 style={{fontSize: 15, marginBottom: 8}}>Brooklyn</h5>
                     <p style={{fontSize: 13, color: 'var(--muted)', lineHeight: 1.5}}>42 Water St, DUMBO<br/>Brooklyn, NY 11201</p>

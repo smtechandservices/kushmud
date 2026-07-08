@@ -18,13 +18,13 @@ export default function AboutPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Our Story</span></div>
-          <h1 style={{fontSize:64}}>The trip you'll remember<br/><em style={{fontStyle:'italic'}}>is the one we lived first.</em></h1>
+          <h1>The trip you'll remember<br/><em style={{fontStyle:'italic'}}>is the one we lived first.</em></h1>
         </div>
       </div>
 
       {/* ── Origin story ── */}
-      <div className="container" style={{padding: '80px 40px 120px'}}>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center'}}>
+      <div className="container page-content">
+        <div className="rgrid" style={{'--gap': '80px', alignItems: 'center'} as React.CSSProperties}>
           <div>
             <p style={{fontSize: 24, lineHeight: 1.4, fontFamily: 'var(--serif)', color: 'var(--ink)'}}>
               Kushmud was founded in 2017 with a simple, slightly stubborn belief: that travel is better when it's slow, and even better when it's certain.
@@ -54,7 +54,7 @@ export default function AboutPage() {
               alt="Our story"
               style={{width: '100%', borderRadius: 4, display: 'block', maxHeight: 600, objectFit: 'cover'}}
             />
-            <div style={{position: 'absolute', bottom: -40, right: -40, width: 240, padding: 24, background: 'var(--clay)', color: 'white', borderRadius: 4, boxShadow: 'var(--shadow-lg)'}}>
+            <div className="about-badge-card" style={{position: 'absolute', bottom: -40, right: -40, width: 240, padding: 24, background: 'var(--clay)', color: 'white', borderRadius: 4, boxShadow: 'var(--shadow-lg)'}}>
               <div style={{fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12}}>Est. 2017</div>
               <div style={{fontFamily: 'var(--serif)', fontSize: 24, lineHeight: 1.2}}>From a single Jeep to a regional network.</div>
             </div>
@@ -68,7 +68,7 @@ export default function AboutPage() {
       <div style={{background: 'var(--sand)', borderTop: '1px solid var(--line)', padding: '96px 0'}}>
         <div className="container">
           <span className="eyebrow">— Our Values</span>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, marginTop: 40}}>
+          <div className="rgrid" style={{'--cols': 'repeat(3, 1fr)', '--gap': '48px', marginTop: 40} as React.CSSProperties}>
             <div>
               <div style={{width: 48, height: 48, borderRadius: '50%', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24}}>
                 <Icon name="leaf" size={20} style={{color: 'var(--forest)'}}/>

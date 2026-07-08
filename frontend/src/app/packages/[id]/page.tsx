@@ -154,7 +154,7 @@ export default function DetailPage() {
               {reviews.length === 0 ? (
                 <p style={{ color: 'var(--muted)' }}>No reviews yet for this trip.</p>
               ) : (
-                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:32}}>
+                <div className="rgrid" style={{'--gap': '32px'} as React.CSSProperties}>
                   {reviews.slice(0, 4).map(r => (
                     <div key={r.id} style={{padding:'4px 0'}}>
                       <div style={{display:'flex', gap:4, color:'var(--clay)', marginBottom:10}}>

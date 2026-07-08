@@ -121,7 +121,7 @@ function ListingContent() {
           <div className="crumbs">Kushmud / <span>All Packages</span></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
-              <h1 style={{ fontSize: 64 }}>All Trips, <em style={{ fontStyle: 'italic' }}>everywhere we go.</em></h1>
+              <h1>All Trips, <em style={{ fontStyle: 'italic' }}>everywhere we go.</em></h1>
               <p style={{ color: 'var(--muted)', marginTop: 14, maxWidth: 540, fontSize: 15 }}>
                 Filter by region, mood, or duration. Each trip is a starting point — every itinerary can be tailored.
               </p>
@@ -307,7 +307,7 @@ function ListingContent() {
             )}
 
             {paged.length > 0 ? (
-              <div className="cards" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <div className="cards cards-2">
                 {paged.map(p => <PackageCard key={p.id} pkg={p} />)}
               </div>
             ) : (

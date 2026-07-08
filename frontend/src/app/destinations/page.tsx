@@ -50,18 +50,15 @@ export default function DestinationsPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Destinations</span></div>
-          <h1 style={{fontSize:64}}>Where we go, <em style={{fontStyle:'italic'}}>intimately.</em></h1>
+          <h1>Where we go, <em style={{fontStyle:'italic'}}>intimately.</em></h1>
           <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>We cover the globe, deeply — ensuring every hotel, route, and guide is one we know by name.</p>
         </div>
       </div>
 
-      <div className="container" style={{padding: '64px 40px 96px'}}>
+      <div className="container page-content-sm">
 
         {/* ── Bento / Pinterest-style showcase of every destination ── */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridAutoRows: 180,
-          gridAutoFlow: 'dense', gap: 16, marginBottom: 80,
-        }}>
+        <div className="bento-grid" style={{ marginBottom: 80 }}>
           {destinations.map((d, i) => {
             const { colSpan, rowSpan } = BENTO_PATTERN[i % BENTO_PATTERN.length];
             return (
@@ -89,23 +86,25 @@ export default function DestinationsPage() {
         {regions.length > 0 && (
           <div style={{marginBottom: 56}}>
             <span className="eyebrow">— Where we operate</span>
-            <div style={{marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10}}>
+            <div className="region-pills-row" style={{marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10}}>
               <span style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)'}}>
                 {regions.length} region{regions.length !== 1 ? 's' : ''} we cover
               </span>
-              {regions.map(r => (
-                <a
-                  key={r.name}
-                  href={`#region-${slugify(r.name)}`}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 13,
-                    border: '1px solid var(--line-2)', color: 'var(--ink)',
-                    textDecoration: 'none', background: 'var(--paper)',
-                  }}
-                >
-                  {r.name}
-                </a>
-              ))}
+              <div className="region-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {regions.map(r => (
+                  <a
+                    key={r.name}
+                    href={`#region-${slugify(r.name)}`}
+                    style={{
+                      padding: '6px 14px', borderRadius: 20, fontSize: 13,
+                      border: '1px solid var(--line-2)', color: 'var(--ink)',
+                      textDecoration: 'none', background: 'var(--paper)',
+                    }}
+                  >
+                    {r.name}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -138,7 +137,7 @@ export default function DestinationsPage() {
           </div>
         ))}
 
-        <div style={{marginTop: 96, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64}}>
+        <div className="rgrid" style={{marginTop: 96, '--gap': '64px'} as React.CSSProperties}>
           <div>
             <span className="eyebrow">— The Kushmud approach</span>
             <h2 style={{marginTop: 16, fontSize: 36}}>Regional expertise, <em style={{fontStyle:'italic'}}>wherever we go.</em></h2>

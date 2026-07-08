@@ -9,11 +9,11 @@ export default function TermsPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Terms & Conditions</span></div>
-          <h1 style={{fontSize:64}}>The small print,<br/><em style={{fontStyle:'italic'}}>kept simple.</em></h1>
+          <h1>The small print,<br/><em style={{fontStyle:'italic'}}>kept simple.</em></h1>
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
+      <div className="container page-content">
         <div style={{margin: '0 auto', color: 'var(--ink-2)', lineHeight: 1.6}}>
           <section style={{marginBottom: 48}}>
             <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: 24}}>01 / Booking & Payments</h4>

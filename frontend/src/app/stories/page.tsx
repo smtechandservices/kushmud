@@ -26,7 +26,7 @@ export default function StoriesPage() {
           <div className="crumbs">Kushmud / <span>Stories</span></div>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24}}>
             <div>
-              <h1 style={{fontSize:64}}>Field Journal, <em style={{fontStyle:'italic'}}>dispatch from the road.</em></h1>
+              <h1>Field Journal, <em style={{fontStyle:'italic'}}>dispatch from the road.</em></h1>
               <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>Essays, photography, and considered guides from our planners serving destinations worldwide.</p>
             </div>
             <Link href="/stories/submit" className="btn btn-ghost" style={{flexShrink: 0}}>Share your story</Link>
@@ -34,9 +34,9 @@ export default function StoriesPage() {
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
+      <div className="container page-content">
         {featured && (
-          <div style={{display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 80, marginBottom: 120}}>
+          <div className="rgrid" style={{'--cols': '1.5fr 1fr', '--gap': '80px', marginBottom: 120} as React.CSSProperties}>
             <div style={{position: 'relative'}}>
               <div style={{aspectRatio: '16/9', backgroundImage: `url(${featured.img})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 4}}></div>
               <div style={{marginTop: 40}}>

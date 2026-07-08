@@ -50,6 +50,7 @@ export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5, class
     case 'filter': return <svg {...props}><path d="M3 5h18l-7 9v6l-4 1v-7Z"/></svg>;
     case 'mail': return <svg {...props}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>;
     case 'lock': return <svg {...props}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>;
+    case 'menu': return <svg {...props}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
     default: return null;
   }
 };

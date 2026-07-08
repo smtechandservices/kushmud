@@ -19,11 +19,11 @@ export default function FAQPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>FAQ</span></div>
-          <h1 style={{fontSize:64}}>Frequently asked,<br/><em style={{fontStyle:'italic'}}>clearly answered.</em></h1>
+          <h1>Frequently asked,<br/><em style={{fontStyle:'italic'}}>clearly answered.</em></h1>
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
+      <div className="container page-content">
         <div style={{margin: '0 auto'}}>
           <div style={{display: 'flex', flexDirection: 'column', gap: 16}}>
             {faqs.map((faq, i) => (

@@ -133,13 +133,13 @@ export default function ProfilePage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Profile</span></div>
-          <h1 style={{ fontSize: 64 }}>Hi, {customer.name.split(' ')[0]}.</h1>
+          <h1>Hi, {customer.name.split(' ')[0]}.</h1>
         </div>
       </div>
 
-      <div className="container" style={{ padding: '80px 40px 120px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 64, alignItems: 'start' }}>
-          <div style={{ position: 'sticky', top: 100 }}>
+      <div className="container page-content">
+        <div className="rgrid" style={{ '--cols': '340px 1fr', '--gap': '64px', alignItems: 'start' } as React.CSSProperties}>
+          <div className="sticky-aside" style={{ position: 'sticky', top: 100 }}>
             <h3 style={{ fontSize: 20, marginBottom: 20 }}>Account details</h3>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="field-group">

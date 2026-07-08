@@ -519,7 +519,7 @@ export default function Home() {
             <div className="why-item">
               <span className="num">03 / Trust</span>
               <h4>One person, one number</h4>
-              <p>You get a named planner. They answer the phone — at home and from the road. ATOL-protected on every booking.</p>
+              <p>You get a named planner. They answer the phone at home and from the road.</p>
             </div>
             <div className="why-item">
               <span className="num">04 / Footprint</span>

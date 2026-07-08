@@ -111,15 +111,15 @@ export default function SubmitStoryPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <Link href="/stories">Stories</Link> / <span>Share your story</span></div>
-          <h1 style={{ fontSize: 64 }}>Tell us <em style={{ fontStyle: 'italic' }}>where you went.</em></h1>
+          <h1>Tell us <em style={{ fontStyle: 'italic' }}>where you went.</em></h1>
           <p style={{ color: 'var(--muted)', marginTop: 14, maxWidth: 540, fontSize: 15 }}>
             Submit a dispatch from your own trip. Our editors review every submission before it goes live on the Field Journal.
           </p>
         </div>
       </div>
 
-      <div className="container" style={{ padding: '80px 40px 120px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 64, alignItems: 'start' }}>
+      <div className="container page-content">
+        <div className="rgrid" style={{ '--cols': '1fr 380px', '--gap': '64px', alignItems: 'start' } as React.CSSProperties}>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="field-group">
@@ -153,7 +153,7 @@ export default function SubmitStoryPage() {
             </button>
           </form>
 
-          <aside style={{ position: 'sticky', top: 100 }}>
+          <aside className="sticky-aside" style={{ position: 'sticky', top: 100 }}>
             <h4 style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid var(--line)' }}>
               Your submissions
             </h4>

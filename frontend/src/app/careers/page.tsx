@@ -21,12 +21,12 @@ export default function CareersPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Careers</span></div>
-          <h1 style={{fontSize:64}}>Work with us<br/><em style={{fontStyle:'italic'}}>in the field.</em></h1>
+          <h1>Work with us<br/><em style={{fontStyle:'italic'}}>in the field.</em></h1>
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 100}}>
+      <div className="container page-content">
+        <div className="rgrid" style={{'--cols': '1fr 1.5fr', '--gap': '100px'} as React.CSSProperties}>
           <div>
             <h2 style={{fontSize: 32}}>Why join Kushmud?</h2>
             <p style={{marginTop: 24, fontSize: 16, lineHeight: 1.6, color: 'var(--ink-2)'}}>

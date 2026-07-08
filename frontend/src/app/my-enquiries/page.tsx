@@ -114,11 +114,11 @@ export default function MyEnquiriesPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>My Enquiries</span></div>
-          <h1 style={{ fontSize: 64 }}>My Enquiries.</h1>
+          <h1>My Enquiries.</h1>
         </div>
       </div>
 
-      <div className="container" style={{ padding: '80px 40px 120px' }}>
+      <div className="container page-content">
         {isLoading ? (
           <p style={{ color: 'var(--muted)' }}>Loading your enquiries...</p>
         ) : bookings.length === 0 ? (
@@ -129,7 +129,7 @@ export default function MyEnquiriesPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {bookings.map(b => (
-              <div key={b.id} style={{
+              <div key={b.id} className="enquiry-row" style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 gap: 24, padding: 24, border: '1px solid var(--line)', borderRadius: 8,
                 flexWrap: 'wrap', background: '#f7f6f4',
@@ -152,7 +152,7 @@ export default function MyEnquiriesPage() {
                     or <Link href="/contact" style={{ color: 'var(--forest)', textDecoration: 'underline' }}>Contact Us</Link>.
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                <div className="enquiry-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                   <StatusPill status={b.status} />
                   <div style={{ fontWeight: 500 }}>₹{b.total.toLocaleString()}</div>
                   {b.created_at && (

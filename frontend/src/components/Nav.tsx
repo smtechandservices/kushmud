@@ -11,6 +11,7 @@ export const Nav: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isCustomerLoggedIn()) {
@@ -18,11 +19,44 @@ export const Nav: React.FC = () => {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     customerLogout();
     setCustomer(null);
     router.push('/');
   };
+
+  const navLinks = (
+    <>
+      <Link href="/" className={pathname === '/' ? 'active' : ''}>Home</Link>
+      <Link href="/packages" className={pathname === '/packages' ? 'active' : ''}>Packages</Link>
+      <Link href="/destinations" className={pathname === '/destinations' ? 'active' : ''}>Destinations</Link>
+      <Link href="/stories" className={pathname === '/stories' ? 'active' : ''}>Stories</Link>
+      <Link href="/about" className={pathname === '/about' ? 'active' : ''}>About</Link>
+      {customer ? (
+        <Link href="/my-enquiries" style={{fontSize:13, color: pathname === '/my-enquiries' ? 'var(--clay)' : 'var(--ink-2)'}}>My Enquiries</Link>
+      ) : null}
+    </>
+  );
+
+  const navActions = (
+    <>
+      {customer ? (
+        <Link href="/profile" style={{fontSize:13, color:'var(--ink-2)', borderBottom: '2px solid var(--clay)', padding: 4}}>Hi, {customer.name.split(' ')[0]}</Link>
+      ) : (
+        <Link href="/login" className="btn btn-ghost btn-sm">Log in</Link>
+      )}
+      <Link href="/packages" className="btn btn-primary btn-sm">
+        Plan a trip
+      </Link>
+      {customer ? (
+        <button onClick={handleLogout} className="btn btn-ghost btn-sm">Log out</button>
+      ) : null}
+    </>
+  );
 
   return (
     <nav className="nav">
@@ -34,31 +68,22 @@ export const Nav: React.FC = () => {
             <span className="brand-sub">Travel &amp; Tourism</span>
           </span>
         </Link>
-        <div className="nav-links">
-          <Link href="/" className={pathname === '/' ? 'active' : ''}>Home</Link>
-          <Link href="/packages" className={pathname === '/packages' ? 'active' : ''}>Packages</Link>
-          <Link href="/destinations" className={pathname === '/destinations' ? 'active' : ''}>Destinations</Link>
-          <Link href="/stories" className={pathname === '/stories' ? 'active' : ''}>Stories</Link>
-          <Link href="/about" className={pathname === '/about' ? 'active' : ''}>About</Link>
-          {customer ? (
-            <Link href="/my-enquiries" style={{fontSize:13, color: pathname === '/my-enquiries' ? 'var(--clay)' : 'var(--ink-2)'}}>My Enquiries</Link>
-          ) : null}
+        <div className="nav-links">{navLinks}</div>
+        <div className="nav-actions">
+          {navActions}
         </div>
-        <div className="nav-actions" style={{display:'flex', alignItems:'center', gap:14}}>
-          {customer ? (
-            <>
-              <Link href="/profile" style={{fontSize:13, color:'var(--ink-2)', borderBottom: '2px solid var(--clay)', padding: 4}}>Hi, {customer.name.split(' ')[0]}</Link>
-            </>
-          ) : (
-            <Link href="/login" className="btn btn-ghost btn-sm">Log in</Link>
-          )}
-          <Link href="/packages" className="btn btn-primary btn-sm">
-            Plan a trip
-          </Link>
-          {customer ? (
-            <button onClick={handleLogout} className="btn btn-ghost btn-sm">Log out</button>
-          ) : null}
-        </div>
+        <button
+          className="nav-toggle"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(o => !o)}
+        >
+          <Icon name={menuOpen ? 'x' : 'menu'} size={22} />
+        </button>
+      </div>
+      <div className={'nav-mobile' + (menuOpen ? ' is-open' : '')}>
+        <div className="nav-mobile-links">{navLinks}</div>
+        <div className="nav-mobile-actions">{navActions}</div>
       </div>
     </nav>
   );

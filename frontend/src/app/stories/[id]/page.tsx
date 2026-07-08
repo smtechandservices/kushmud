@@ -72,7 +72,7 @@ export default function StoryDetailPage() {
         </div>
       </div>
 
-      <div className="container" style={{ padding: '60px 40px 120px' }}>
+      <div className="container page-content-story">
         <div style={{ aspectRatio: '16/9', backgroundImage: `url(${story.img})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 4, marginBottom: 40 }}></div>
 
         {story.tag && <span className="eyebrow" style={{ color: 'var(--clay)' }}>{story.tag}</span>}

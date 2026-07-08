@@ -10,11 +10,11 @@ export default function InsurancePage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Insurance</span></div>
-          <h1 style={{fontSize:64}}>Travel with<br/><em style={{fontStyle:'italic'}}>peace of mind.</em></h1>
+          <h1>Travel with<br/><em style={{fontStyle:'italic'}}>peace of mind.</em></h1>
         </div>
       </div>
 
-      <div className="container" style={{padding: '80px 40px 120px'}}>
+      <div className="container page-content">
         <div style={{margin: '0 auto'}}>
           <div style={{padding: '40px', background: 'var(--sand)', borderRadius: 4, marginBottom: 56, display: 'flex', gap: 24, alignItems: 'flex-start'}}>
             <Icon name="shield" size={32} style={{color: 'var(--forest)', flexShrink: 0, marginTop: 4}}/>
@@ -27,7 +27,7 @@ export default function InsurancePage() {
           </div>
 
           <h3 style={{fontSize: 28, marginBottom: 32}}>What your policy should cover:</h3>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 80}}>
+          <div className="rgrid" style={{'--gap': '24px', marginBottom: 80} as React.CSSProperties}>
             {[
               "Medical & Emergency Evacuation",
               "Trip Cancellation & Interruption",
