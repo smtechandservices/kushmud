@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
-import { fetchDestinations, createDestination, updateDestination, deleteDestination, Destination } from '@/lib/data';
+import { fetchDestinations, createDestination, updateDestination, deleteDestination, fetchRegions, Destination, Region } from '@/lib/data';
 
 const BLANK_DEST = {
   name: '',
+  region: '',
   count: 0,
   img: '',
   tag: 'Explore',
@@ -14,6 +15,7 @@ const BLANK_DEST = {
 
 export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingName, setEditingName] = useState<string | null>(null);
@@ -31,17 +33,20 @@ export default function DestinationsPage() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+    fetchRegions().then(setRegions).catch(console.error);
+  }, []);
 
   const openCreateModal = () => {
     setEditingName(null);
-    setNewDest(BLANK_DEST);
+    setNewDest({ ...BLANK_DEST, region: regions[0]?.name ?? '' });
     setShowModal(true);
   };
 
   const openEditModal = (d: Destination) => {
     setEditingName(d.name);
-    setNewDest({ name: d.name, count: d.count, img: d.img, tag: d.tag });
+    setNewDest({ name: d.name, region: d.region, count: d.count, img: d.img, tag: d.tag });
     setShowModal(true);
   };
 
@@ -145,7 +150,7 @@ export default function DestinationsPage() {
                     <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                       <div>
                         <h4 style={{fontSize:16, marginBottom:4}}>{d.name}</h4>
-                        <span style={{fontSize:12, color:'var(--muted)', fontFamily:'var(--mono)'}}>{d.count} packages</span>
+                        <span style={{fontSize:12, color:'var(--muted)', fontFamily:'var(--mono)'}}>{d.region} · {d.count} packages</span>
                       </div>
                       <div style={{display:'flex', gap:4}}>
                         <button
@@ -192,20 +197,29 @@ export default function DestinationsPage() {
               </div>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
+                  <label>Region</label>
+                  <select required value={newDest.region} onChange={e => setNewDest({...newDest, region: e.target.value})}>
+                    <option value="" disabled>Select a region…</option>
+                    {regions.map(r => (
+                      <option key={r.name} value={r.name}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field-group">
                   <label>Package Count</label>
                   <input type="number" required value={newDest.count} onChange={e => setNewDest({...newDest, count: parseInt(e.target.value) || 0})}/>
                 </div>
-                <div className="field-group">
-                  <label>Tag</label>
-                  <select value={newDest.tag} onChange={e => setNewDest({...newDest, tag: e.target.value})}>
-                    <option value="Explore">Explore</option>
-                    <option value="Trending">Trending</option>
-                    <option value="New">New</option>
-                    <option value="Popular">Popular</option>
-                    <option value="Heritage">Heritage</option>
-                    <option value="Beach">Beach</option>
-                  </select>
-                </div>
+              </div>
+              <div className="field-group">
+                <label>Tag</label>
+                <select value={newDest.tag} onChange={e => setNewDest({...newDest, tag: e.target.value})}>
+                  <option value="Explore">Explore</option>
+                  <option value="Trending">Trending</option>
+                  <option value="New">New</option>
+                  <option value="Popular">Popular</option>
+                  <option value="Heritage">Heritage</option>
+                  <option value="Beach">Beach</option>
+                </select>
               </div>
               <div className="field-group">
                 <label>Cover Image URL</label>

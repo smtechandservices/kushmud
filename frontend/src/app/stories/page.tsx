@@ -25,7 +25,7 @@ export default function StoriesPage() {
         <div className="container">
           <div className="crumbs">Kushmud / <span>Stories</span></div>
           <h1 style={{fontSize:64}}>Field Journal, <em style={{fontStyle:'italic'}}>dispatch from the road.</em></h1>
-          <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>Essays, photography, and considered guides from our planners in India and the UAE.</p>
+          <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>Essays, photography, and considered guides from our planners serving destinations worldwide.</p>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export default function StoriesPage() {
             <aside>
               <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 32, paddingBottom: 16, borderBottom: '1px solid var(--line)'}}>Latest Entries</h4>
               <div style={{display: 'flex', flexDirection: 'column', gap: 40}}>
-                {rest.map(s => (
+                {rest.slice(0, 4).map(s => (
                   <div key={s.id} style={{display: 'flex', gap: 24}}>
                     <div style={{width: 100, height: 100, borderRadius: 2, backgroundImage: `url(${s.img})`, backgroundSize: 'cover', backgroundPosition: 'center', flexShrink: 0}}></div>
                     <div>

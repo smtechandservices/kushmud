@@ -38,8 +38,13 @@ export interface PackageReview {
   created_at: string;
 }
 
+export interface Region {
+  name: string;
+}
+
 export interface Destination {
   name: string;
+  region: string;
   count: number;
   img: string;
   tag: string;
@@ -125,6 +130,7 @@ export interface TrendingPackage {
 export interface SiteStats {
   active_trips: number;
   cities_covered: number;
+  regions_covered: number;
   avg_rating: number;
   trending: TrendingPackage[];
   trending_basis: 'inquiries' | 'rating';
@@ -308,6 +314,12 @@ export async function fetchPackageReviews(packageId: string): Promise<PackageRev
 export async function fetchDestinations(): Promise<Destination[]> {
   const res = await fetch(getApiUrl('/api/destinations/'));
   if (!res.ok) throw new Error('Failed to fetch destinations');
+  return await res.json();
+}
+
+export async function fetchRegions(): Promise<Region[]> {
+  const res = await fetch(getApiUrl('/api/regions/'));
+  if (!res.ok) throw new Error('Failed to fetch regions');
   return await res.json();
 }
 

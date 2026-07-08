@@ -70,8 +70,18 @@ class PackageReview(models.Model):
     def __str__(self):
         return f"{self.name} on {self.package_id}"
 
+class Region(models.Model):
+    name = models.CharField(max_length=100, primary_key=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 class Destination(models.Model):
     name = models.CharField(max_length=100, primary_key=True)
+    region = models.ForeignKey(Region, on_delete=models.PROTECT, db_column='region', related_name='destinations')
     count = models.IntegerField(default=0)
     img = models.TextField()
     tag = models.CharField(max_length=100)

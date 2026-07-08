@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@/components/Icon';
@@ -12,7 +12,6 @@ import {
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 
-const REGIONS = ['Anywhere', 'India', 'UAE'];
 const STYLES  = ['Cultural', 'Adventure', 'Culinary', 'Wellness', 'Family', 'Luxury'];
 const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -38,6 +37,11 @@ export default function Home() {
   const [destOrder, setDestOrder] = useState<number[]>([]);
   const [destSwapPos, setDestSwapPos] = useState<number | null>(null);
   const destSwapCursor = useRef(0);
+
+  const REGIONS = useMemo(
+    () => ['Anywhere', ...Array.from(new Set(packages.map(p => p.region))).sort()],
+    [packages]
+  );
 
   useEffect(() => {
     async function loadData() {
@@ -244,10 +248,11 @@ export default function Home() {
         <div className="hero-content">
           <div className="hero-eyebrow"><span className="line"></span> Kushmud · Spring '26 Collection</div>
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>
-          <p className="hero-sub">Considered itineraries across India and the UAE, planned by people who've actually slept in the haveli, taken the desert drive and walked the bazaar.</p>
+          <p className="hero-sub">Considered itineraries served globally, planned by people who've actually slept in the haveli, taken the desert drive and walked the bazaar.</p>
           <div className="hero-meta">
             <div className="hero-meta-item">Active trips<span>{siteStats ? siteStats.active_trips.toLocaleString() : '—'}</span></div>
             <div className="hero-meta-item">Cities covered<span>{siteStats ? siteStats.cities_covered : '—'}</span></div>
+            <div className="hero-meta-item">Regions<span>{siteStats ? siteStats.regions_covered : '—'}</span></div>
             <div className="hero-meta-item">Avg. rating<span>{siteStats ? `${siteStats.avg_rating} / 5` : '—'}</span></div>
             <div className="hero-meta-item">In the field<span>since 2017</span></div>
           </div>
@@ -530,9 +535,9 @@ export default function Home() {
           <div className="section-head">
             <div>
               <span className="eyebrow">— Where we go</span>
-              <h2>Two countries. <em style={{fontStyle:'italic'}}>Known intimately.</em></h2>
+              <h2>Everywhere. <em style={{fontStyle:'italic'}}>Known intimately.</em></h2>
             </div>
-            <div className="meta">India and the UAE — two regions, hundreds of routes. We'd rather know two places deeply than fifty lightly.</div>
+            <div className="meta">Served globally, hundreds of routes vetted by planners who've actually stood in the places they recommend.</div>
           </div>
           <div className="dest-grid">
             {destOrder.slice(0, 5).map((destIdx, pos) => {
@@ -542,7 +547,7 @@ export default function Home() {
               return (
                 <Link
                   key={pos}
-                  href={`/packages?region=${encodeURIComponent(d.name.split(' ')[0] === 'Rajasthan' || d.name === 'Kerala' || d.name === 'Ladakh' ? 'India' : d.name === 'Dubai' || d.name === 'Abu Dhabi' ? 'UAE' : 'India')}`}
+                  href={`/packages?region=${encodeURIComponent(d.region)}`}
                   className={'dest-card ' + (isLg ? 'lg' : '') + (isSwapping ? ' dest-swap' : '')}
                   style={{ backgroundImage: `url(${d.img})`, gridRow: isLg ? 'span 2' : undefined }}
                 >

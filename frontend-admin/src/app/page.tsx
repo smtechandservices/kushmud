@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Icon } from '@/components/Icon';
 import {
   fetchStats, fetchBookings, fetchMe, createPackage, updateBookingStatus,
-  Booking, AdminUser
+  fetchDestinations, fetchRegions, Booking, AdminUser, Destination, Region
 } from '@/lib/data';
 import { Sidebar } from '@/components/Sidebar';
 
@@ -53,12 +53,14 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [today, setToday] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
 
   const [newPkg, setNewPkg] = useState({
     id: '',
     title: '',
     destination: '',
-    region: 'India',
+    region: '',
     type: 'Cultural',
     duration: 5,
     nights: 4,
@@ -91,6 +93,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadData();
     fetchMe().then(setMe).catch(() => {});
+    fetchDestinations().then(setDestinations).catch(console.error);
+    fetchRegions().then(setRegions).catch(console.error);
     setToday(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
   }, []);
 
@@ -104,6 +108,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const openCreateModal = () => {
+    setNewPkg(p => ({ ...p, destination: destinations[0]?.name ?? '', region: regions[0]?.name ?? '' }));
+    setShowModal(true);
+  };
+
   const handleCreatePackage = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -113,8 +122,8 @@ export default function AdminDashboard() {
       setNewPkg({
         id: '',
         title: '',
-        destination: '',
-        region: 'India',
+        destination: destinations[0]?.name ?? '',
+        region: regions[0]?.name ?? '',
         type: 'Cultural',
         duration: 5,
         nights: 4,
@@ -167,7 +176,7 @@ export default function AdminDashboard() {
           </div>
           <div style={{display:'flex', gap:10, alignItems:'center'}}>
             <Link href="http://localhost:3000" className="btn btn-ghost btn-sm">← View site</Link>
-            <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
+            <button className="btn btn-primary btn-sm" onClick={openCreateModal}>
               <Icon name="plus" size={13}/> New package
             </button>
           </div>
@@ -347,13 +356,20 @@ export default function AdminDashboard() {
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
                   <label>Destination City/Area</label>
-                  <input required placeholder="Jaipur, India" value={newPkg.destination} onChange={e => setNewPkg({...newPkg, destination: e.target.value})}/>
+                  <select required value={newPkg.destination} onChange={e => setNewPkg({...newPkg, destination: e.target.value})}>
+                    <option value="" disabled>Select a destination…</option>
+                    {destinations.map(d => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="field-group">
                   <label>Region</label>
-                  <select value={newPkg.region} onChange={e => setNewPkg({...newPkg, region: e.target.value})}>
-                    <option value="India">India</option>
-                    <option value="UAE">UAE</option>
+                  <select required value={newPkg.region} onChange={e => setNewPkg({...newPkg, region: e.target.value})}>
+                    <option value="" disabled>Select a region…</option>
+                    {regions.map(r => (
+                      <option key={r.name} value={r.name}>{r.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>

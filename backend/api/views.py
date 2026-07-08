@@ -12,12 +12,12 @@ from django.db.models import Sum, Avg, Q, Count
 from django.utils import timezone
 from api.authentication import CustomerJWTAuthentication
 from api.models import (
-    Package, Destination, Offer, Testimonial, Booking, ContactInquiry,
+    Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
 )
 from django.contrib.auth.models import User
 from api.serializers import (
-    PackageSerializer, DestinationSerializer, OfferSerializer,
+    PackageSerializer, DestinationSerializer, RegionSerializer, OfferSerializer,
     TestimonialSerializer, BookingSerializer, ContactInquirySerializer,
     FAQSerializer, StorySerializer, NewsletterSubscriberSerializer, UserSerializer,
     CustomerSerializer, CustomerSignupSerializer, JobOpeningSerializer, PackageReviewSerializer,
@@ -67,6 +67,11 @@ class PackageReviewViewSet(viewsets.ModelViewSet):
         if package_id:
             qs = qs.filter(package_id=package_id)
         return qs
+
+class RegionViewSet(viewsets.ModelViewSet):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all()
@@ -162,6 +167,13 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        existing = NewsletterSubscriber.objects.filter(email__iexact=email).first() if email else None
+        if existing:
+            return Response(self.get_serializer(existing).data, status=status.HTTP_200_OK)
+        return super().create(request, *args, **kwargs)
 
 class CustomerSignupView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -331,6 +343,7 @@ class SiteStatsView(APIView):
         return Response({
             "active_trips": Package.objects.count(),
             "cities_covered": Destination.objects.count(),
+            "regions_covered": Region.objects.count(),
             "avg_rating": round(avg_rating, 2),
             "trending": trending,
             "trending_basis": basis,

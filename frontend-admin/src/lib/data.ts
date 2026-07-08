@@ -38,8 +38,13 @@ export interface PackageReview {
   created_at: string;
 }
 
+export interface Region {
+  name: string;
+}
+
 export interface Destination {
   name: string;
+  region: string;
   count: number;
   img: string;
   tag: string;
@@ -364,6 +369,30 @@ export async function deleteFlyer(id: number): Promise<void> {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete flyer');
+}
+
+// ── Regions ──
+export async function fetchRegions(): Promise<Region[]> {
+  const res = await authFetch(getApiUrl('/api/regions/'));
+  if (!res.ok) throw new Error('Failed to fetch regions');
+  return await res.json();
+}
+
+export async function createRegion(data: { name: string }): Promise<Region> {
+  const res = await authFetch(getApiUrl('/api/regions/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create region');
+  return await res.json();
+}
+
+export async function deleteRegion(name: string): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/regions/${encodeURIComponent(name)}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete region');
 }
 
 // ── Destinations ──

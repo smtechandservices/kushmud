@@ -33,7 +33,7 @@ export default function AboutPage() {
               We started with a single route through Rajasthan. No fancy office, just two planners and a battered Jeep. We didn't want to be the biggest agency; we wanted to be the one that knew exactly which window in Udaipur had the best view of the lake at dawn.
             </p>
             <p style={{marginTop: 24, fontSize: 16, lineHeight: 1.6, color: 'var(--ink-2)'}}>
-              Today, we cover India and the UAE with the same level of granular detail. Every partner property is visited annually. Every driver is a friend. Every meal we recommend is one we've enjoyed ourselves.
+              Today, we serve destinations globally with that same level of granular detail. Every partner property is visited annually. Every driver is a friend. Every meal we recommend is one we've enjoyed ourselves.
             </p>
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0, marginTop: 20, paddingTop: 32}}>
               {points.map((p) => (

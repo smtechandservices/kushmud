@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
                 <span className="brand-sub">Travel &amp; Tourism</span>
               </span>
             </div>
-            <p className="footer-tag">Considered travel across India and the UAE for people who'd rather pack light and go slow. Curated since 2017.</p>
+            <p className="footer-tag">Considered travel served globally for people who'd rather pack light and go slow. Curated since 2017.</p>
             <br />
             <span>Safe Travels</span>
           </div>

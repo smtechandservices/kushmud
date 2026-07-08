@@ -45,7 +45,7 @@ export default function InsurancePage() {
 
           <div style={{padding: '48px', border: '1px solid var(--line)', borderRadius: 4, textAlign: 'center'}}>
             <h4 style={{fontSize: 20, marginBottom: 16}}>Need a recommendation?</h4>
-            <p style={{color: 'var(--muted)', marginBottom: 32}}>While we don't sell insurance directly, we recommend the following providers known for their reliable coverage in India and the UAE:</p>
+            <p style={{color: 'var(--muted)', marginBottom: 32}}>While we don't sell insurance directly, we recommend the following providers known for their reliable coverage worldwide:</p>
             <div style={{display: 'flex', gap: 32, justifyContent: 'center'}}>
               <span style={{fontSize: 18, fontWeight: 600, color: 'var(--ink)'}}>World Nomads</span>
               <span style={{fontSize: 18, fontWeight: 600, color: 'var(--ink)'}}>Allianz Travel</span>

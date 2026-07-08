@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.views import (
-    PackageViewSet, DestinationViewSet, OfferViewSet,
+    PackageViewSet, DestinationViewSet, RegionViewSet, OfferViewSet,
     TestimonialViewSet, BookingViewSet, ContactInquiryViewSet, StatsView,
     FAQViewSet, StoryViewSet, NewsletterSubscriberViewSet, MeView, SiteStatsView,
     ChangePasswordView, CustomerViewSet, CustomerSignupView, CustomerLoginView,
@@ -13,6 +13,7 @@ router = DefaultRouter()
 router.register(r'packages', PackageViewSet, basename='package')
 router.register(r'package-reviews', PackageReviewViewSet, basename='package-review')
 router.register(r'destinations', DestinationViewSet, basename='destination')
+router.register(r'regions', RegionViewSet, basename='region')
 router.register(r'offers', OfferViewSet, basename='offer')
 router.register(r'flyers', FlyerViewSet, basename='flyer')
 router.register(r'testimonials', TestimonialViewSet, basename='testimonial')

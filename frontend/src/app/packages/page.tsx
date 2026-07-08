@@ -8,7 +8,7 @@ import { fetchPackages, Package } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
 import filtersData from '@/assets/packages-filters.json';
 
-const { types, regions, durations, months, sortOptions } = filtersData;
+const { durations, months, sortOptions } = filtersData;
 
 const PER_PAGE  = 6;
 const PRICE_MAX = 5000;
@@ -28,6 +28,15 @@ function ListingContent() {
   useEffect(() => {
     fetchPackages().then(setPackages).catch(console.error);
   }, []);
+
+  const types = useMemo(
+    () => Array.from(new Set(packages.map(p => p.type))).sort(),
+    [packages]
+  );
+  const regions = useMemo(
+    () => Array.from(new Set(packages.map(p => p.region))).sort(),
+    [packages]
+  );
 
   const [typeFilters, setTypeFilters] = useState<Set<string>>(() => {
     const t = searchParams.get('type');
@@ -154,15 +163,15 @@ function ListingContent() {
               <h5>Region</h5>
               {regions.map(r => (
                 <div
-                  key={r.name}
-                  className={'fopt fopt-check ' + (regionFilters.has(r.name) ? 'on' : '')}
-                  onClick={() => toggle('region', r.name)}
+                  key={r}
+                  className={'fopt fopt-check ' + (regionFilters.has(r) ? 'on' : '')}
+                  onClick={() => toggle('region', r)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span className="box">{regionFilters.has(r.name) && <Icon name="check" size={9} stroke={3} />}</span>
-                    <span>{r.name}</span>
+                    <span className="box">{regionFilters.has(r) && <Icon name="check" size={9} stroke={3} />}</span>
+                    <span>{r}</span>
                   </div>
-                  <span className="fopt-count">{packages.filter(p => p.region === r.name).length}</span>
+                  <span className="fopt-count">{packages.filter(p => p.region === r).length}</span>
                 </div>
               ))}
             </div>

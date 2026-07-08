@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Kushmud : Travel and Tourism",
-  description: "Considered travel across India and the UAE.",
+  description: "Considered travel, served globally.",
   icons: {
     icon: "/logo.png",
   },

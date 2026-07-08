@@ -1,23 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
-import { createContactInquiry } from '@/lib/data';
+import { createContactInquiry, fetchDestinations, Destination } from '@/lib/data';
+
+const CUSTOM_OPTION = 'Other';
 
 export default function ContactPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [destination, setDestination] = useState('Rajasthan, India');
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [destination, setDestination] = useState('');
+  const [customDestination, setCustomDestination] = useState('');
   const [message, setMessage] = useState('');
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const dests = await fetchDestinations();
+        if (dests && dests.length > 0) {
+          setDestinations(dests);
+          setDestination(dests[0].name);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !message) {
+    const finalDestination = destination === CUSTOM_OPTION ? customDestination.trim() : destination;
+    if (!firstName || !lastName || !email || !message || !finalDestination) {
       alert('Please fill out all fields.');
       return;
     }
@@ -27,7 +46,7 @@ export default function ContactPage() {
         first_name: firstName,
         last_name: lastName,
         email,
-        destination,
+        destination: finalDestination,
         message
       });
       setIsSuccess(true);
@@ -35,6 +54,7 @@ export default function ContactPage() {
       setLastName('');
       setEmail('');
       setMessage('');
+      setCustomDestination('');
     } catch (e) {
       console.error(e);
       alert('Failed to send message. Please try again.');
@@ -118,17 +138,26 @@ export default function ContactPage() {
               </div>
               <div className="field-group">
                 <label>Where are you thinking of going?</label>
-                <select 
+                <select
                   style={{borderBottom: '1px solid var(--line)', background: 'transparent'}}
                   value={destination}
                   onChange={e => setDestination(e.target.value)}
                 >
-                  <option value="Rajasthan, India">Rajasthan, India</option>
-                  <option value="Kerala, India">Kerala, India</option>
-                  <option value="Dubai, UAE">Dubai, UAE</option>
-                  <option value="Abu Dhabi, UAE">Abu Dhabi, UAE</option>
+                  {destinations.map(d => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
                   <option value="I'm not sure yet">I'm not sure yet</option>
+                  <option value={CUSTOM_OPTION}>Somewhere else…</option>
                 </select>
+                {destination === CUSTOM_OPTION && (
+                  <input
+                    type="text"
+                    style={{borderBottom: '1px solid var(--line)', marginTop: 12}}
+                    value={customDestination}
+                    onChange={e => setCustomDestination(e.target.value)}
+                    required
+                  />
+                )}
               </div>
               <div className="field-group">
                 <label>How can we help?</label>

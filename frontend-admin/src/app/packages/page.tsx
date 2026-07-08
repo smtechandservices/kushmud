@@ -5,7 +5,8 @@ import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
 import {
   fetchPackages, createPackage, deletePackage, updatePackage, Package, ItineraryDay,
-  fetchPackageReviews, createPackageReview, deletePackageReview, PackageReview
+  fetchPackageReviews, createPackageReview, deletePackageReview, PackageReview,
+  fetchDestinations, Destination, fetchRegions, Region
 } from '@/lib/data';
 
 type EditForm = {
@@ -49,7 +50,7 @@ const emptyNewPkg: NewPkgForm = {
   id: '',
   title: '',
   destination: '',
-  region: 'India',
+  region: '',
   type: 'Cultural',
   duration: 5,
   nights: 4,
@@ -86,6 +87,8 @@ function toForm(p: Package): EditForm {
 
 export default function PackagesPage() {
   const [packages, setPackages] = useState<Package[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Package | null>(null);
   const [form, setForm] = useState<EditForm | null>(null);
@@ -110,6 +113,8 @@ export default function PackagesPage() {
 
   useEffect(() => {
     loadData();
+    fetchDestinations().then(setDestinations).catch(console.error);
+    fetchRegions().then(setRegions).catch(console.error);
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -267,7 +272,7 @@ export default function PackagesPage() {
   };
 
   const openCreate = () => {
-    setNewPkg(emptyNewPkg);
+    setNewPkg({ ...emptyNewPkg, destination: destinations[0]?.name ?? '', region: regions[0]?.name ?? '' });
     setCreateError('');
     setShowCreateModal(true);
   };
@@ -455,10 +460,10 @@ export default function PackagesPage() {
               </div>
 
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
-                <Field label="Price (₹)">
+                <Field label="Discounted Price (₹)">
                   <input type="number" min={0} value={form.price} onChange={set('price')} />
                 </Field>
-                <Field label="Was price (₹)">
+                <Field label="Original Price (₹)">
                   <input type="number" min={0} value={form.priceWas} onChange={set('priceWas')} placeholder="Optional" />
                 </Field>
               </div>
@@ -694,13 +699,20 @@ export default function PackagesPage() {
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
                   <label>Destination City/Area</label>
-                  <input required placeholder="Jaipur, India" value={newPkg.destination} onChange={e => setNewPkg({...newPkg, destination: e.target.value})}/>
+                  <select required value={newPkg.destination} onChange={e => setNewPkg({...newPkg, destination: e.target.value})}>
+                    <option value="" disabled>Select a destination…</option>
+                    {destinations.map(d => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="field-group">
                   <label>Region</label>
-                  <select value={newPkg.region} onChange={e => setNewPkg({...newPkg, region: e.target.value})}>
-                    <option value="India">India</option>
-                    <option value="UAE">UAE</option>
+                  <select required value={newPkg.region} onChange={e => setNewPkg({...newPkg, region: e.target.value})}>
+                    <option value="" disabled>Select a region…</option>
+                    {regions.map(r => (
+                      <option key={r.name} value={r.name}>{r.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -727,7 +739,7 @@ export default function PackagesPage() {
               </div>
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
                 <div className="field-group">
-                  <label>Price per person (₹)</label>
+                  <label>Discounted Price per person (₹)</label>
                   <input required type="number" min={0} value={newPkg.price} onChange={e => setNewPkg({...newPkg, price: parseInt(e.target.value) || 0})}/>
                 </div>
                 <div className="field-group">

@@ -51,7 +51,7 @@ export default function FAQPage() {
             <p style={{color: 'var(--muted)', marginBottom: 32}}>Our planners are happy to jump on a call to discuss the finer details of your trip.</p>
             <div style={{display: 'flex', gap: 12, justifyContent: 'center'}}>
               <Link href="/contact" className="btn btn-primary">Schedule a call</Link>
-              <a href="mailto:hello@kushmud.com" className="btn btn-ghost">Email us</a>
+              <Link href="/contact" className="btn btn-ghost">Email us</Link>
             </div>
           </div>
         </div>

@@ -137,7 +137,7 @@ function SignupContent() {
             {/* Kushmud<span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--clay)' }} /> */}
           </div>
           <div className="auth-visual-quote" style={{ alignSelf: 'flex-end', textAlign: 'right' }}>
-            "Curated trips across India and the UAE, planned by people who've actually slept there."
+            "Curated trips served globally, planned by people who've actually slept there."
             <span>— The Kushmud planning team</span>
           </div>
         </div>

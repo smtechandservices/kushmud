@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from api.models import (
-    Package, Destination, Offer, Testimonial, Booking, ContactInquiry,
+    Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
 )
 
@@ -24,6 +24,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
         model = Favorite
         fields = ['id', 'package', 'package_id', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
 
 class DestinationSerializer(serializers.ModelSerializer):
     class Meta:

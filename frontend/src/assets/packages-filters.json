@@ -1,9 +1,4 @@
 {
-  "types": ["Cultural", "Adventure", "Culinary", "Wellness", "Family", "Luxury"],
-  "regions": [
-    { "name": "India", "count": 10 },
-    { "name": "UAE",   "count": 6 }
-  ],
   "durations": ["3-5 days", "6-9 days", "10-14 days", "15+ days"],
   "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   "sortOptions": [

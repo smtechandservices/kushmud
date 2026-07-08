@@ -48,7 +48,7 @@ function LoginContent() {
             Kushmud<span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--clay)' }} />
           </div>
           <div className="auth-visual-quote">
-            "We don't try to cover the globe. We cover India and the UAE deeply, one considered trip at a time."
+            "We cover the globe, but never lightly. Every destination gets the same considered depth, one trip at a time."
             <span>— The Kushmud planning team</span>
           </div>
         </div>
