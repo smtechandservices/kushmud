@@ -69,9 +69,15 @@ class FAQSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class StorySerializer(serializers.ModelSerializer):
+    submitted_by = serializers.SerializerMethodField()
+
     class Meta:
         model = Story
         fields = '__all__'
+        read_only_fields = ['customer']
+
+    def get_submitted_by(self, obj):
+        return obj.customer.name if obj.customer_id else None
 
 class JobOpeningSerializer(serializers.ModelSerializer):
     class Meta:

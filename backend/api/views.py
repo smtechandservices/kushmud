@@ -10,7 +10,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Sum, Avg, Q, Count
 from django.utils import timezone
-from api.authentication import CustomerJWTAuthentication
+from api.authentication import CustomerJWTAuthentication, StaffOrCustomerJWTAuthentication
 from api.models import (
     Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
@@ -152,7 +152,36 @@ class FAQViewSet(viewsets.ModelViewSet):
 class StoryViewSet(viewsets.ModelViewSet):
     queryset = Story.objects.all()
     serializer_class = StorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ('create', 'mine'):
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticatedOrReadOnly()]
+
+    def get_authenticators(self):
+        action = getattr(self, 'action_map', {}).get(self.request.method.lower())
+        if action == 'create':
+            return [StaffOrCustomerJWTAuthentication()]
+        if action == 'mine':
+            return [CustomerJWTAuthentication()]
+        return super().get_authenticators()
+
+    def get_queryset(self):
+        qs = Story.objects.all()
+        if getattr(self.request.user, 'is_staff', False):
+            return qs
+        return qs.filter(status=Story.STATUS_APPROVED)
+
+    def perform_create(self, serializer):
+        if isinstance(self.request.user, Customer):
+            serializer.save(customer=self.request.user, author=self.request.user.name, status=Story.STATUS_PENDING)
+        else:
+            serializer.save()
+
+    @action(detail=False, methods=['get'])
+    def mine(self, request):
+        stories = Story.objects.filter(customer=request.user).order_by('-published_at')
+        return Response(StorySerializer(stories, many=True).data)
 
 class JobOpeningViewSet(viewsets.ModelViewSet):
     queryset = JobOpening.objects.all()

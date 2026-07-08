@@ -145,6 +145,15 @@ class FAQ(models.Model):
         return self.question
 
 class Story(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
     title = models.CharField(max_length=200)
     excerpt = models.TextField()
     body = models.TextField(null=True, blank=True)
@@ -152,6 +161,8 @@ class Story(models.Model):
     author = models.CharField(max_length=100, null=True, blank=True)
     tag = models.CharField(max_length=100, null=True, blank=True)
     published_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_APPROVED)
+    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL, related_name='stories')
 
     class Meta:
         ordering = ['-published_at']

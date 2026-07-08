@@ -101,6 +101,8 @@ export interface Story {
   author?: string | null;
   tag?: string | null;
   published_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_by?: string | null;
 }
 
 export interface JobOpening {

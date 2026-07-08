@@ -173,7 +173,7 @@ export default function DetailPage() {
             </div>
           </div>
 
-          <aside>
+          <aside style={{ position: 'sticky', top: 100, alignSelf: 'start', height: 'fit-content' }}>
             <div className="book-card">
               <div className="price-row">
                 <div>

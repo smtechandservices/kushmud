@@ -100,6 +100,8 @@ export interface Story {
   author?: string | null;
   tag?: string | null;
   published_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_by?: string | null;
 }
 
 export interface JobOpening {
@@ -351,6 +353,23 @@ export async function fetchStoryById(id: number): Promise<Story> {
   const res = await fetch(getApiUrl(`/api/stories/${id}/`));
   if (!res.ok) throw new Error(`Failed to fetch story: ${id}`);
   return await res.json();
+}
+
+export async function submitStory(data: { title: string; excerpt: string; body?: string; img: string; tag?: string }): Promise<Story> {
+  const res = await fetch(getApiUrl('/api/stories/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getCustomerAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to submit story');
+  return await res.json();
+}
+
+export function fetchMyStories(): Promise<Story[]> {
+  if (!isCustomerLoggedIn()) return Promise.resolve([]);
+  return fetch(getApiUrl('/api/stories/mine/'), { headers: getCustomerAuthHeaders() })
+    .then(res => (res.ok ? res.json() : []))
+    .catch(() => []);
 }
 
 export async function fetchJobOpenings(): Promise<JobOpening[]> {

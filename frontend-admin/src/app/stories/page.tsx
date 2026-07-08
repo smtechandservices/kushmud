@@ -40,6 +40,13 @@ function formatDate(iso: string) {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+// Reuses the booking status badge palette: approved/rejected map onto confirmed/cancelled styling.
+function statusClass(status: Story['status']) {
+  if (status === 'approved') return 'confirmed';
+  if (status === 'rejected') return 'cancelled';
+  return 'pending';
+}
+
 export default function StoriesPage() {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +107,15 @@ export default function StoriesPage() {
     }
   };
 
+  const handleStatusUpdate = async (id: number, status: Story['status']) => {
+    try {
+      await updateStory(id, { status });
+      await loadData();
+    } catch (e) {
+      alert('Failed to update story status');
+    }
+  };
+
   const openEdit = (s: Story) => {
     setEditing(s);
     setForm(toForm(s));
@@ -149,6 +165,8 @@ export default function StoriesPage() {
     );
   });
 
+  const pendingCount = stories.filter(s => s.status === 'pending').length;
+
   return (
     <div className="admin">
       <Sidebar />
@@ -173,7 +191,8 @@ export default function StoriesPage() {
             <div>
               <h2>Stories</h2>
               <p className="sub" style={{margin:'6px 0 0'}}>
-                {stories.length} stor{stories.length !== 1 ? 'ies' : 'y'} published.
+                {stories.length} stor{stories.length !== 1 ? 'ies' : 'y'} total.
+                {pendingCount > 0 && <><strong style={{color:'var(--clay)'}}>{pendingCount} pending review.</strong></>}
               </p>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={loadData}>Refresh</button>
@@ -199,6 +218,7 @@ export default function StoriesPage() {
                     <th>Story</th>
                     <th>Tag</th>
                     <th>Author</th>
+                    <th>Status</th>
                     <th>Published</th>
                     <th style={{textAlign:'right'}}>Actions</th>
                   </tr>
@@ -223,10 +243,24 @@ export default function StoriesPage() {
                           <span style={{color:'var(--muted)'}}>—</span>
                         )}
                       </td>
-                      <td style={{color:'var(--ink-2)'}}>{s.author || '—'}</td>
+                      <td style={{color:'var(--ink-2)'}}>
+                        {s.author || '—'}
+                        {s.submitted_by && (
+                          <div style={{fontSize:11, color:'var(--muted)', marginTop:2}}>Submitted by customer</div>
+                        )}
+                      </td>
+                      <td>
+                        <span className={'status ' + statusClass(s.status)}><span className="d"></span>{s.status}</span>
+                      </td>
                       <td style={{color:'var(--ink-2)'}}>{formatDate(s.published_at)}</td>
                       <td style={{textAlign:'right'}}>
                         <div style={{display:'inline-flex', gap:6}}>
+                          {s.status === 'pending' && (
+                            <>
+                              <button className="btn btn-sm btn-ghost" style={{padding: '4px 10px', color:'var(--forest)'}} onClick={() => handleStatusUpdate(s.id, 'approved')}>Approve</button>
+                              <button className="btn btn-sm btn-ghost" style={{padding: '4px 10px', color:'#c79a4a'}} onClick={() => handleStatusUpdate(s.id, 'rejected')}>Reject</button>
+                            </>
+                          )}
                           <button className="btn btn-sm btn-ghost" style={{padding: '4px 10px'}} onClick={() => openEdit(s)}>Edit</button>
                           <button className="btn btn-sm btn-ghost" style={{padding: '4px 8px', color:'var(--muted)'}} onClick={() => handleDelete(s.id)}>Delete</button>
                         </div>

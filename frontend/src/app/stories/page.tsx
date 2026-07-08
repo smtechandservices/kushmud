@@ -24,8 +24,13 @@ export default function StoriesPage() {
       <div className="page-head">
         <div className="container">
           <div className="crumbs">Kushmud / <span>Stories</span></div>
-          <h1 style={{fontSize:64}}>Field Journal, <em style={{fontStyle:'italic'}}>dispatch from the road.</em></h1>
-          <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>Essays, photography, and considered guides from our planners serving destinations worldwide.</p>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 24}}>
+            <div>
+              <h1 style={{fontSize:64}}>Field Journal, <em style={{fontStyle:'italic'}}>dispatch from the road.</em></h1>
+              <p style={{color:'var(--muted)', marginTop:14, maxWidth:540, fontSize:15}}>Essays, photography, and considered guides from our planners serving destinations worldwide.</p>
+            </div>
+            <Link href="/stories/submit" className="btn btn-ghost" style={{flexShrink: 0}}>Share your story</Link>
+          </div>
         </div>
       </div>
 
