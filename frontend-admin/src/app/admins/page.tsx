@@ -56,6 +56,11 @@ export default function ManageAdminsPage() {
 
   const [actionError, setActionError] = useState('');
 
+  const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
+  const [editForm, setEditForm] = useState({ first_name: '', last_name: '', email: '', password: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+
   const loadAdmins = async () => {
     try {
       const data = await fetchAdmins();
@@ -144,6 +149,41 @@ export default function ManageAdminsPage() {
       await loadAdmins();
     } catch (e) {
       setActionError(e instanceof Error ? e.message : 'Failed to update admin.');
+    }
+  };
+
+  const openEdit = (admin: AdminUser) => {
+    setEditingAdmin(admin);
+    setEditForm({ first_name: admin.first_name, last_name: admin.last_name, email: admin.email || '', password: '' });
+    setEditError('');
+  };
+
+  const closeEdit = () => {
+    setEditingAdmin(null);
+    setEditError('');
+  };
+
+  const handleEditSave = async () => {
+    if (!editingAdmin) return;
+    setEditError('');
+    if (editForm.password && editForm.password.length < 8) {
+      setEditError('Password must be at least 8 characters.');
+      return;
+    }
+    setEditSaving(true);
+    try {
+      await updateAdmin(editingAdmin.id, {
+        first_name: editForm.first_name.trim(),
+        last_name: editForm.last_name.trim(),
+        email: editForm.email.trim(),
+        ...(editForm.password ? { password: editForm.password } : {}),
+      });
+      closeEdit();
+      await loadAdmins();
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : 'Failed to update admin.');
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -315,6 +355,9 @@ export default function ManageAdminsPage() {
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button className="btn btn-sm btn-ghost" style={{ padding: '4px 10px' }} onClick={() => openEdit(a)}>
+                            Edit
+                          </button>
                           <button className="btn btn-sm btn-ghost" style={{ padding: '4px 10px' }} onClick={() => handleToggleSuperuser(a)}>
                             {a.is_superuser ? 'Revoke superuser' : 'Make superuser'}
                           </button>
@@ -339,6 +382,60 @@ export default function ManageAdminsPage() {
           </div>
         </div>
       </main>
+
+      {editingAdmin && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(28,25,22,0.6)',
+            backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000, padding: 24,
+          }}
+          onClick={closeEdit}
+        >
+          <div
+            style={{
+              background: 'var(--paper)', border: '1px solid var(--line)',
+              borderRadius: 8, padding: 32, maxWidth: 440, width: '100%',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 22, marginBottom: 20 }}>Edit {editingAdmin.username}</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <Field label="First name">
+                    <input type="text" value={editForm.first_name} onChange={e => setEditForm({ ...editForm, first_name: e.target.value })} />
+                  </Field>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Field label="Last name">
+                    <input type="text" value={editForm.last_name} onChange={e => setEditForm({ ...editForm, last_name: e.target.value })} />
+                  </Field>
+                </div>
+              </div>
+              <Field label="Email">
+                <input type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
+              </Field>
+              <Field label="New password">
+                <input
+                  type="password"
+                  value={editForm.password}
+                  onChange={e => setEditForm({ ...editForm, password: e.target.value })}
+                  placeholder="Leave blank to keep current password"
+                />
+              </Field>
+              {editError && <span style={{ fontSize: 13, color: '#b8443a' }}>{editError}</span>}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+                <button className="btn btn-ghost btn-sm" onClick={closeEdit} disabled={editSaving}>Cancel</button>
+                <button className="btn btn-primary btn-sm" onClick={handleEditSave} disabled={editSaving}>
+                  {editSaving ? 'Saving…' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
