@@ -31,6 +31,8 @@ class RegionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DestinationSerializer(serializers.ModelSerializer):
+    count = serializers.ReadOnlyField()
+
     class Meta:
         model = Destination
         fields = '__all__'
@@ -46,10 +48,15 @@ class TestimonialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BookingSerializer(serializers.ModelSerializer):
+    destination = serializers.SerializerMethodField()
+
     class Meta:
         model = Booking
         fields = '__all__'
         read_only_fields = ['id', 'customer']
+
+    def get_destination(self, obj):
+        return Package.objects.filter(title=obj.pkg).values_list('destination', flat=True).first()
 
 class ContactInquirySerializer(serializers.ModelSerializer):
     class Meta:

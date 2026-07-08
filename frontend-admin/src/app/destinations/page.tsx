@@ -8,7 +8,6 @@ import { fetchDestinations, createDestination, updateDestination, deleteDestinat
 const BLANK_DEST = {
   name: '',
   region: '',
-  count: 0,
   img: '',
   tag: 'Explore',
 };
@@ -46,7 +45,7 @@ export default function DestinationsPage() {
 
   const openEditModal = (d: Destination) => {
     setEditingName(d.name);
-    setNewDest({ name: d.name, region: d.region, count: d.count, img: d.img, tag: d.tag });
+    setNewDest({ name: d.name, region: d.region, img: d.img, tag: d.tag });
     setShowModal(true);
   };
 
@@ -207,9 +206,16 @@ export default function DestinationsPage() {
                 </div>
                 <div className="field-group">
                   <label>Package Count</label>
-                  <input type="number" required value={newDest.count} onChange={e => setNewDest({...newDest, count: parseInt(e.target.value) || 0})}/>
+                  <input
+                    disabled
+                    value={editingName ? `${destinations.find(d => d.name === editingName)?.count ?? 0} (auto)` : 'Set after creating'}
+                    style={{color: 'var(--muted)'}}
+                  />
                 </div>
               </div>
+              <p style={{margin:'-4px 0 0', fontSize:12, color:'var(--muted)'}}>
+                Package count is calculated automatically from packages that list this destination
+              </p>
               <div className="field-group">
                 <label>Tag</label>
                 <select value={newDest.tag} onChange={e => setNewDest({...newDest, tag: e.target.value})}>

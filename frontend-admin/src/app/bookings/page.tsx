@@ -5,6 +5,14 @@ import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
 import { fetchBookings, updateBookingStatus, Booking } from '@/lib/data';
 
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+    timeZone: 'Asia/Kolkata',
+  }) + ' IST';
+}
+
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{display: 'flex', justifyContent: 'space-between', gap: 16, padding: '10px 0', borderBottom: '1px solid var(--line)'}}>
@@ -50,7 +58,7 @@ function BookingDetailsModal({ booking, isBusy, onClose, onConfirm, onCancel }: 
           {booking.created_at && (
             <DetailRow
               label="Submitted"
-              value={new Date(booking.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              value={formatDateTime(booking.created_at)}
             />
           )}
           {booking.remarks && (
@@ -71,7 +79,7 @@ function BookingDetailsModal({ booking, isBusy, onClose, onConfirm, onCancel }: 
                   disabled={isBusy}
                   onClick={() => onCancel(booking.id)}
                 >
-                  Cancel
+                  Reject
                 </button>
                 <button
                   className="btn btn-sm btn-primary"
@@ -119,7 +127,8 @@ export default function BookingsPage() {
       b.name.toLowerCase().includes(q) ||
       b.pkg.toLowerCase().includes(q) ||
       b.id.toLowerCase().includes(q) ||
-      b.status.toLowerCase().includes(q)
+      b.status.toLowerCase().includes(q) ||
+      (b.destination ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -165,14 +174,17 @@ export default function BookingsPage() {
             {loading ? (
               <div style={{padding: 32, textAlign: 'center', color: 'var(--muted)'}}>Loading bookings...</div>
             ) : (
-              <table className="dtable">
+              <div style={{overflowX: 'auto'}}>
+              <table className="dtable" style={{whiteSpace: 'nowrap'}}>
                 <thead>
                   <tr>
                     <th>Reference</th>
                     <th>Customer</th>
                     <th style={{textAlign:'center'}}>Pax</th>
                     <th>Package</th>
+                    <th>Destination</th>
                     <th>Dates</th>
+                    <th>Booked On</th>
                     <th>Status</th>
                     <th style={{textAlign:'right'}}>Total</th>
                     <th></th>
@@ -195,7 +207,9 @@ export default function BookingsPage() {
                       </td>
                       <td style={{textAlign:'center', color:'var(--ink-2)', fontFamily:'var(--mono)', fontSize:12}}>{b.pax ?? '—'}</td>
                       <td style={{color:'var(--ink-2)'}}>{b.pkg}</td>
+                      <td style={{color:'var(--ink-2)'}}>{b.destination ?? '—'}</td>
                       <td style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink-2)'}}>{b.dates}</td>
+                      <td style={{fontFamily:'var(--mono)', fontSize:12, color:'var(--ink-2)'}}>{b.created_at ? formatDateTime(b.created_at) : '—'}</td>
                       <td>
                         <span className={'status ' + b.status}><span className="d"></span>{b.status}</span>
                       </td>
@@ -207,13 +221,14 @@ export default function BookingsPage() {
                   ))}
                   {filteredBookings.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
+                      <td colSpan={10} style={{textAlign: 'center', padding: 24, color: 'var(--muted)'}}>
                         {bookings.length === 0 ? 'No bookings found.' : 'No bookings match your search.'}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>

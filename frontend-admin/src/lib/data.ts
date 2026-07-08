@@ -81,6 +81,7 @@ export interface Booking {
   pax?: number;
   remarks?: string | null;
   created_at?: string;
+  destination?: string | null;
 }
 
 export interface FAQ {

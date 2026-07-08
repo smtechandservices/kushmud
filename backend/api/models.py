@@ -82,10 +82,13 @@ class Region(models.Model):
 class Destination(models.Model):
     name = models.CharField(max_length=100, primary_key=True)
     region = models.ForeignKey(Region, on_delete=models.PROTECT, db_column='region', related_name='destinations')
-    count = models.IntegerField(default=0)
     img = models.TextField()
     tag = models.CharField(max_length=100)
     size = models.CharField(max_length=20, null=True, blank=True)
+
+    @property
+    def count(self):
+        return Package.objects.filter(destination__icontains=self.name).count()
 
     def __str__(self):
         return self.name

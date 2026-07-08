@@ -175,7 +175,7 @@ export default function PackagesPage() {
     }
   };
 
-  const set = (key: keyof EditForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const set = (key: keyof EditForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(f => f ? { ...f, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value } : f);
   };
 
@@ -439,15 +439,32 @@ export default function PackagesPage() {
 
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
                 <Field label="Destination">
-                  <input value={form.destination} onChange={set('destination')} />
+                  <select value={form.destination} onChange={set('destination')}>
+                    <option value="" disabled>Select a destination…</option>
+                    {destinations.map(d => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
                 </Field>
                 <Field label="Region">
-                  <input value={form.region} onChange={set('region')} />
+                  <select value={form.region} onChange={set('region')}>
+                    <option value="" disabled>Select a region…</option>
+                    {regions.map(r => (
+                      <option key={r.name} value={r.name}>{r.name}</option>
+                    ))}
+                  </select>
                 </Field>
               </div>
 
               <Field label="Type">
-                <input value={form.type} onChange={set('type')} placeholder="e.g. Cultural, Adventure" />
+                <select value={form.type} onChange={set('type')}>
+                  <option value="Cultural">Cultural</option>
+                  <option value="Adventure">Adventure</option>
+                  <option value="Culinary">Culinary</option>
+                  <option value="Wellness">Wellness</option>
+                  <option value="Family">Family</option>
+                  <option value="Luxury">Luxury</option>
+                </select>
               </Field>
 
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
@@ -875,7 +892,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         textTransform:'uppercase', color:'var(--muted)',
       }}>{label}</label>
       {React.Children.map(children, child => {
-        if (React.isValidElement(child) && (child.type === 'input' || child.type === 'textarea')) {
+        if (React.isValidElement(child) && (child.type === 'input' || child.type === 'textarea' || child.type === 'select')) {
           const existingStyle = (child.props as React.HTMLAttributes<HTMLElement>).style ?? {};
           return React.cloneElement(child as React.ReactElement<React.HTMLAttributes<HTMLElement>>, {
             style: { ...inputStyle, ...existingStyle },
