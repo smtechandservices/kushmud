@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { MainLayout } from '@/components/MainLayout';
 import { Icon } from '@/components/Icon';
@@ -76,7 +76,7 @@ const steps = [
   { num: '03', title: 'We run it end to end', desc: 'From bookings to on-the-ground support, one team stays accountable throughout.' },
 ];
 
-export default function B2BPage() {
+function B2BContent() {
   const searchParams = useSearchParams();
   const [orgName, setOrgName] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -402,5 +402,13 @@ export default function B2BPage() {
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+export default function B2BPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '100px 0', textAlign: 'center' }}>Loading...</div>}>
+      <B2BContent />
+    </Suspense>
   );
 }
