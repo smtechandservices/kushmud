@@ -126,7 +126,7 @@ export interface Flyer {
   created_at: string;
 }
 
-export type SiteEffect = 'none' | 'snow' | 'rain' | 'autumn' | 'independence_day';
+export type SiteEffect = 'none' | 'snow' | 'rain' | 'autumn' | 'independence_day' | 'auto';
 
 export interface SiteEffectSetting {
   active_effect: SiteEffect;

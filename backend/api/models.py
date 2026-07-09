@@ -263,12 +263,14 @@ class SiteEffectSetting(models.Model):
     EFFECT_RAIN = 'rain'
     EFFECT_AUTUMN = 'autumn'
     EFFECT_INDEPENDENCE_DAY = 'independence_day'
+    EFFECT_AUTO = 'auto'
     EFFECT_CHOICES = [
         (EFFECT_NONE, 'None'),
         (EFFECT_SNOW, 'Snow'),
         (EFFECT_RAIN, 'Rain'),
         (EFFECT_AUTUMN, 'Autumn'),
         (EFFECT_INDEPENDENCE_DAY, 'Independence Day'),
+        (EFFECT_AUTO, 'Auto (by visitor date/region)'),
     ]
 
     active_effect = models.CharField(max_length=20, choices=EFFECT_CHOICES, default=EFFECT_NONE)

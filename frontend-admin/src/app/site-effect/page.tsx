@@ -10,6 +10,7 @@ const EFFECT_OPTIONS: { value: SiteEffect; label: string; description: string }[
   { value: 'rain', label: 'Rain', description: 'Falling rain streaks over the offers section and footer.' },
   { value: 'autumn', label: 'Autumn', description: 'Drifting autumn leaves over the offers section and footer.' },
   { value: 'independence_day', label: 'Independence Day', description: 'Rising kites and Indian flags over the offers section and footer.' },
+  { value: 'auto', label: 'Auto (by date)', description: 'Automatically picks an effect for each visitor based on their local date and hemisphere (snow in winter, rain in monsoon season, autumn leaves in autumn, kites on Aug 15).' },
 ];
 
 export default function SiteEffectPage() {
