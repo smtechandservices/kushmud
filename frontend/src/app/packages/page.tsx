@@ -10,8 +10,9 @@ import filtersData from '@/assets/packages-filters.json';
 
 const { durations, months, sortOptions } = filtersData;
 
-const PER_PAGE  = 6;
-const PRICE_MAX = 5000;
+const PER_PAGE = 6;
+const PRICE_MAX_FALLBACK = 20000;
+const PRICE_CEILING_PADDING = 5000;
 
 function durationMatches(d: number, bucket: string) {
   if (bucket === '3-5 days')   return d >= 3  && d <= 5;
@@ -51,10 +52,15 @@ function ListingContent() {
     const m = searchParams.get('months');
     return m ? new Set(m.split(',').map(Number)) : new Set();
   });
-  const [priceMax, setPriceMax] = useState(PRICE_MAX);
+  const priceCeiling = useMemo(
+    () => packages.length ? Math.max(...packages.map(p => p.price)) + PRICE_CEILING_PADDING : PRICE_MAX_FALLBACK,
+    [packages]
+  );
+  const [priceMax, setPriceMax] = useState(Infinity);
   const [sort,     setSort]     = useState('featured');
   const [page,     setPage]     = useState(1);
   const [sortOpen, setSortOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   function toggleSet<T>(s: Set<T>, val: T): Set<T> {
     const next = new Set(s);
@@ -75,20 +81,20 @@ function ListingContent() {
     setRegionFilters(new Set());
     setDurationFilters(new Set());
     setActiveMonths(new Set());
-    setPriceMax(PRICE_MAX);
+    setPriceMax(Infinity);
     setPage(1);
   }
 
   const hasFilters = typeFilters.size > 0 || regionFilters.size > 0 ||
                      durationFilters.size > 0 || activeMonths.size > 0 ||
-                     priceMax < PRICE_MAX;
+                     priceMax !== Infinity;
 
   const filtered = useMemo(() => {
     let res = [...packages];
     if (typeFilters.size > 0)     res = res.filter(p => typeFilters.has(p.type));
     if (regionFilters.size > 0)   res = res.filter(p => regionFilters.has(p.region));
     if (durationFilters.size > 0) res = res.filter(p => [...durationFilters].some(b => durationMatches(p.duration, b)));
-    if (priceMax < PRICE_MAX)     res = res.filter(p => p.price <= priceMax);
+    if (priceMax !== Infinity)    res = res.filter(p => p.price <= priceMax);
 
     switch (sort) {
       case 'featured':   res.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || b.reviews - a.reviews); break;
@@ -111,7 +117,7 @@ function ListingContent() {
     ...[...regionFilters].map(r   => ({ label: r,            remove: () => toggle('region', r) })),
     ...[...durationFilters].map(d => ({ label: d,            remove: () => toggle('duration', d) })),
     ...[...activeMonths].map(i    => ({ label: months[i],    remove: () => toggle('month', i) })),
-    ...(priceMax < PRICE_MAX      ? [{ label: `Up to ₹${priceMax.toLocaleString()}`, remove: () => { setPriceMax(PRICE_MAX); setPage(1); } }] : []),
+    ...(priceMax !== Infinity     ? [{ label: `Up to ₹${priceMax.toLocaleString()}`, remove: () => { setPriceMax(Infinity); setPage(1); } }] : []),
   ];
 
   return (
@@ -134,7 +140,21 @@ function ListingContent() {
         <div className="listing">
 
           {/* ── Sidebar filters ── */}
-          <aside className="filters">
+          <button
+            type="button"
+            className="filters-toggle-btn"
+            onClick={() => setFiltersOpen(o => !o)}
+          >
+            <Icon name="filter" size={13} />
+            Filters{hasFilters ? ` (${activeTags.length})` : ''}
+            <Icon
+              name="arrow-right"
+              size={12}
+              stroke={2}
+              style={{ marginLeft: 'auto', transform: filtersOpen ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }}
+            />
+          </button>
+          <aside className={'filters' + (filtersOpen ? ' is-open' : '')}>
             <div className="filter-group">
               <h5>
                 Filters
@@ -182,16 +202,16 @@ function ListingContent() {
                 <input
                   type="range"
                   min={500}
-                  max={PRICE_MAX}
+                  max={priceCeiling}
                   step={100}
-                  value={priceMax}
+                  value={priceMax === Infinity ? priceCeiling : priceMax}
                   onChange={e => { setPriceMax(Number(e.target.value)); setPage(1); }}
                   style={{ width: '100%', accentColor: 'var(--clay)' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--mono)', marginTop: 6 }}>
                   <span>₹500</span>
-                  <span style={{ color: priceMax < PRICE_MAX ? 'var(--clay)' : 'var(--muted)' }}>
-                    Up to ₹{priceMax.toLocaleString()}
+                  <span style={{ color: priceMax !== Infinity ? 'var(--clay)' : 'var(--muted)' }}>
+                    Up to ₹{(priceMax === Infinity ? priceCeiling : priceMax).toLocaleString()}
                   </span>
                 </div>
               </div>
