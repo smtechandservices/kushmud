@@ -126,6 +126,13 @@ export interface Flyer {
   created_at: string;
 }
 
+export type SiteEffect = 'none' | 'snow' | 'rain' | 'autumn' | 'independence_day';
+
+export interface SiteEffectSetting {
+  active_effect: SiteEffect;
+  updated_at: string;
+}
+
 export interface AdminUser {
   id: number;
   username: string;
@@ -387,6 +394,22 @@ export async function deleteFlyer(id: number): Promise<void> {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete flyer');
+}
+
+export async function fetchSiteEffect(): Promise<SiteEffectSetting> {
+  const res = await authFetch(getApiUrl('/api/site-effect/'));
+  if (!res.ok) throw new Error('Failed to fetch site effect');
+  return await res.json();
+}
+
+export async function updateSiteEffect(effect: SiteEffect): Promise<SiteEffectSetting> {
+  const res = await authFetch(getApiUrl('/api/site-effect/'), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active_effect: effect }),
+  });
+  if (!res.ok) throw new Error('Failed to update site effect');
+  return await res.json();
 }
 
 // ── Regions ──

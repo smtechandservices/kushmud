@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Newsreader, Geist, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { SiteEffectProvider } from "@/components/effects/SiteEffectContext";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -35,8 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${newsreader.variable} ${geist.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
-        <WhatsAppButton />
+        <SiteEffectProvider>
+          {children}
+          <WhatsAppButton />
+        </SiteEffectProvider>
         <Analytics />
       </body>
     </html>

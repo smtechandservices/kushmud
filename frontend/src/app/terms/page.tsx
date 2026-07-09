@@ -17,22 +17,22 @@ export default function TermsPage() {
         <div style={{margin: '0 auto', color: 'var(--ink-2)', lineHeight: 1.6}}>
           <section style={{marginBottom: 48}}>
             <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: 24}}>01 / Booking & Payments</h4>
-            <p>A deposit of 20% is required to secure your booking. The remaining balance is due 60 days before your departure. For bookings made within 60 days of departure, full payment is required at the time of booking.</p>
+            <p>A deposit of 20% is required to secure your booking. The remaining balance is due 30 days before your departure. For bookings made within 30 days of departure, full payment is required at the time of booking.</p>
           </section>
 
           <section style={{marginBottom: 48}}>
             <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: 24}}>02 / Cancellations by You</h4>
             <p>If you need to cancel your trip, the following fees apply:</p>
             <ul style={{marginTop: 16, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 12}}>
-              <li><strong>60+ days before departure:</strong> Full refund minus a ₹150 administration fee per person.</li>
-              <li><strong>30–59 days before departure:</strong> 50% of the total trip cost is retained.</li>
-              <li><strong>Less than 30 days before departure:</strong> 100% of the total trip cost is retained.</li>
+              <li><strong>30+ days before departure:</strong> Full refund minus an administration fee per person.</li>
+              <li><strong>10–29 days before departure:</strong> 50% of the total trip cost is retained.</li>
+              <li><strong>Less than 10 days before departure:</strong> 100% of the total trip cost is retained.</li>
             </ul>
           </section>
 
           <section style={{marginBottom: 48}}>
             <h4 style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: 24}}>03 / Our Responsibility</h4>
-            <p>Kushmud acts as an agent for our partner hotels, transport providers, and guides. While we take every care in selecting our partners, we cannot be held liable for their independent actions. However, we are ATOL protected, ensuring your funds are safe in the event of insolvency.</p>
+            <p>Kushmud acts as an agent for our partner hotels, transport providers, and guides. While we take every care in selecting our partners, we cannot be held liable for their independent actions.</p>
           </section>
 
           <section style={{marginBottom: 48}}>

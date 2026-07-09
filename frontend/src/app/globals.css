@@ -133,6 +133,18 @@ button { font-family: inherit; cursor: pointer; }
   font-weight: 500;
   line-height: 1;
 }
+.nav-effect-badge {
+  display: inline-block;
+  font-size: 16px;
+  margin-top: -6px;
+  margin-left: -28px;
+  animation: nav-effect-sway 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes nav-effect-sway {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-3px) rotate(8deg); }
+}
 .nav-links {
   display: flex;
   gap: 28px;
@@ -305,8 +317,8 @@ button { font-family: inherit; cursor: pointer; }
 /* ─── Hero ─────────────────────────────────────── */
 .hero {
   position: relative;
-  height: 720px;
-  min-height: 720px;
+  height: 640px;
+  min-height: 640px;
   flex-shrink: 0;
   overflow: hidden;
   background: var(--ink);
@@ -337,6 +349,25 @@ button { font-family: inherit; cursor: pointer; }
   z-index: 1;
 }
 .hero-content { z-index: 2; }
+
+/* ── Seasonal weather effect (current offers section) ── */
+.weather-section { position: relative; overflow: hidden; }
+.weather-section .container { position: relative; z-index: 1; }
+.section-weather-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+.section-weather-canvas canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .hero-badge {
   position: absolute;
   top: 28px; right: 40px;
@@ -2398,3 +2429,4 @@ button { font-family: inherit; cursor: pointer; }
   .gallery { grid-template-columns: 1fr; grid-template-rows: 200px; grid-auto-rows: 120px; }
   .gallery .lg { grid-column: span 1; height: 200px; }
 }
+

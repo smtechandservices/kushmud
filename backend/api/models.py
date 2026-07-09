@@ -256,3 +256,23 @@ class B2BInquiry(models.Model):
 
     def __str__(self):
         return f"{self.organization} - {self.inquiry_type}"
+
+class SiteEffectSetting(models.Model):
+    EFFECT_NONE = 'none'
+    EFFECT_SNOW = 'snow'
+    EFFECT_RAIN = 'rain'
+    EFFECT_AUTUMN = 'autumn'
+    EFFECT_INDEPENDENCE_DAY = 'independence_day'
+    EFFECT_CHOICES = [
+        (EFFECT_NONE, 'None'),
+        (EFFECT_SNOW, 'Snow'),
+        (EFFECT_RAIN, 'Rain'),
+        (EFFECT_AUTUMN, 'Autumn'),
+        (EFFECT_INDEPENDENCE_DAY, 'Independence Day'),
+    ]
+
+    active_effect = models.CharField(max_length=20, choices=EFFECT_CHOICES, default=EFFECT_NONE)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.active_effect

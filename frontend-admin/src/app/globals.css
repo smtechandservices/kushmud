@@ -2084,6 +2084,77 @@ button {
   background: #fbf8f1;
 }
 
+/* ─── Effect selection cards ───────────────────────────────── */
+.effect-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .effect-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.effect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.effect-card:hover {
+  border-color: var(--clay);
+}
+
+.effect-card.active {
+  border-color: var(--clay);
+  background: rgba(31,59,48,0.06);
+}
+
+.effect-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.effect-card-title {
+  font-weight: 500;
+}
+
+.effect-card-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.effect-card.active .effect-card-radio {
+  border-color: var(--clay);
+}
+
+.effect-card.active .effect-card-radio::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--clay);
+}
+
+.effect-card-desc {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .dtable .who {
   display: flex;
   align-items: center;

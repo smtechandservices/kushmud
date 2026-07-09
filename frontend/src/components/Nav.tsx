@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon } from './Icon';
+import { NavEffectBadge } from './effects/NavEffectBadge';
 import {
   isCustomerLoggedIn, fetchCustomerMe, customerLogout, Customer,
   fetchRegions, fetchDestinations, fetchStories, Region, Destination, Story,
@@ -175,6 +176,7 @@ export const Nav: React.FC = () => {
             <span className="brand-name">Kushmud</span>
             <span className="brand-sub">Travel &amp; Tourism</span>
           </span>
+          <NavEffectBadge />
         </Link>
         <div className="nav-links">{navLinks}</div>
         <div className="nav-actions">

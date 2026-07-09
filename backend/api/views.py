@@ -14,7 +14,7 @@ from api.authentication import CustomerJWTAuthentication, StaffOrCustomerJWTAuth
 from api.models import (
     Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
-    B2BInquiry
+    B2BInquiry, SiteEffectSetting
 )
 from django.contrib.auth.models import User
 from api.serializers import (
@@ -22,7 +22,8 @@ from api.serializers import (
     TestimonialSerializer, BookingSerializer, ContactInquirySerializer,
     FAQSerializer, StorySerializer, NewsletterSubscriberSerializer, UserSerializer,
     CustomerSerializer, CustomerSignupSerializer, JobOpeningSerializer, PackageReviewSerializer,
-    FavoriteSerializer, AdminUserSerializer, FlyerSerializer, B2BInquirySerializer
+    FavoriteSerializer, AdminUserSerializer, FlyerSerializer, B2BInquirySerializer,
+    SiteEffectSettingSerializer
 )
 
 class IsSuperUser(permissions.BasePermission):
@@ -387,6 +388,23 @@ class SiteStatsView(APIView):
             "trending": trending,
             "trending_basis": basis,
         })
+
+class SiteEffectSettingView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+    def get(self, request, format=None):
+        setting, _ = SiteEffectSetting.objects.get_or_create(pk=1)
+        return Response(SiteEffectSettingSerializer(setting).data)
+
+    def patch(self, request, format=None):
+        setting, _ = SiteEffectSetting.objects.get_or_create(pk=1)
+        serializer = SiteEffectSettingSerializer(setting, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 class StatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -11,6 +11,7 @@ import {
   Package, Offer, Destination, Testimonial, SiteStats, Flyer
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
+import { SeasonalEffect } from '@/components/SeasonalEffect';
 
 const STYLES  = ['Cultural', 'Adventure', 'Culinary', 'Wellness', 'Family', 'Luxury'];
 const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -509,7 +510,8 @@ export default function Home() {
         </section>
       )}
 
-      <section className="offers">
+      <section className="offers weather-section">
+        <SeasonalEffect />
         <div className="container">
           <div className="section-head">
             <div>

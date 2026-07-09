@@ -384,6 +384,19 @@ export async function fetchSiteStats(): Promise<SiteStats> {
   return await res.json();
 }
 
+export type SiteEffect = 'none' | 'snow' | 'rain' | 'autumn' | 'independence_day';
+
+export interface SiteEffectSetting {
+  active_effect: SiteEffect;
+  updated_at: string;
+}
+
+export async function fetchSiteEffect(): Promise<SiteEffectSetting> {
+  const res = await fetch(getApiUrl('/api/site-effect/'));
+  if (!res.ok) throw new Error('Failed to fetch site effect');
+  return await res.json();
+}
+
 export async function fetchFlyers(): Promise<Flyer[]> {
   const res = await fetch(getApiUrl('/api/flyers/'));
   if (!res.ok) throw new Error('Failed to fetch flyers');

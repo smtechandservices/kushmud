@@ -1,9 +1,13 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { SeasonalEffect } from './SeasonalEffect';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="footer">
+    <footer className="footer weather-section">
+      <SeasonalEffect />
       <div className="container">
         <div className="footer-top">
           <div>

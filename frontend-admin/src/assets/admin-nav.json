@@ -10,6 +10,7 @@
   { "sec": "Marketing" },
   { "ic": "tag",      "label": "Offers & promotions",               "href": "/offers" },
   { "ic": "sparkle",  "label": "Flyers",                            "href": "/flyers" },
+  { "ic": "leaf",     "label": "Site Effect",                       "href": "/site-effect" },
   { "ic": "mail",     "label": "Newsletters",                       "href": "/newsletters" },
   { "sec": "Content" },
   { "ic": "star",     "label": "Testimonials",                      "href": "/testimonials" },

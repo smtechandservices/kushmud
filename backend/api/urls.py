@@ -7,7 +7,7 @@ from api.views import (
     ChangePasswordView, CustomerViewSet, CustomerSignupView, CustomerLoginView,
     CustomerMeView, JobOpeningViewSet, PackageReviewViewSet, FavoriteViewSet,
     CustomerNewsletterView, AnalyticsView, AdminUserViewSet, FlyerViewSet,
-    B2BInquiryViewSet
+    B2BInquiryViewSet, SiteEffectSettingView
 )
 
 router = DefaultRouter()
@@ -33,6 +33,7 @@ urlpatterns = [
     path('stats/', StatsView.as_view(), name='stats'),
     path('analytics/', AnalyticsView.as_view(), name='analytics'),
     path('site-stats/', SiteStatsView.as_view(), name='site-stats'),
+    path('site-effect/', SiteEffectSettingView.as_view(), name='site-effect'),
     path('me/', MeView.as_view(), name='me'),
     path('me/password/', ChangePasswordView.as_view(), name='change-password'),
     path('customers/signup/', CustomerSignupView.as_view(), name='customer-signup'),

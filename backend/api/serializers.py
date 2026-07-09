@@ -3,7 +3,7 @@ from rest_framework import serializers
 from api.models import (
     Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
-    B2BInquiry
+    B2BInquiry, SiteEffectSetting
 )
 
 class PackageSerializer(serializers.ModelSerializer):
@@ -101,6 +101,12 @@ class FlyerSerializer(serializers.ModelSerializer):
         model = Flyer
         fields = '__all__'
         read_only_fields = ['created_at']
+
+class SiteEffectSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteEffectSetting
+        fields = ['active_effect', 'updated_at']
+        read_only_fields = ['updated_at']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
