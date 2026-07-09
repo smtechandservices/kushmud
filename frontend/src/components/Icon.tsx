@@ -55,6 +55,7 @@ export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5, class
     case 'trophy': return <svg {...props}><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a2 2 0 0 0 0 4h1M17 5h3a2 2 0 0 1 0 4h-1"/></svg>;
     case 'chevron-down': return <svg {...props}><path d="m6 9 6 6 6-6"/></svg>;
     case 'percent': return <svg {...props}><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>;
+    case 'chevron-up': return <svg {...props}><path d="m18 15-6-6-6 6"/></svg>;
     default: return null;
   }
 };

@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { fetchPackageById, fetchPackageReviews, Package, PackageReview } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
+import { useCurrency } from '@/context/CurrencyContext';
 
 export default function DetailPage() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function DetailPage() {
   const [pkg, setPkg] = useState<Package | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { formatPrice } = useCurrency();
   const [reviews, setReviews] = useState<PackageReview[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -177,11 +179,11 @@ export default function DetailPage() {
             <div className="book-card">
               <div className="price-row">
                 <div>
-                  <div className="price">₹{pkg.price.toLocaleString()}</div>
+                  <div className="price">{formatPrice(pkg.price)}</div>
                   <div className="per">per person, double occupancy</div>
-                  {pkg.priceWas && <div className="strike">₹{pkg.priceWas.toLocaleString()}</div>}
+                  {pkg.priceWas && <div className="strike">{formatPrice(pkg.priceWas)}</div>}
                 </div>
-                {pkg.priceWas && <span className="save">Save ₹{(pkg.priceWas-pkg.price).toLocaleString()}</span>}
+                {pkg.priceWas && <span className="save">Save {formatPrice(pkg.priceWas-pkg.price)}</span>}
               </div>
               <div style={{marginTop:18, marginBottom:8, fontSize:13, color:'var(--muted)'}}>
                 Choose your dates and party size when you enquire.

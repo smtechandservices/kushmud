@@ -11,6 +11,7 @@ import {
   Package, Offer, Destination, Testimonial, SiteStats, Flyer
 } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const STYLES  = ['Cultural', 'Adventure', 'Culinary', 'Wellness', 'Family', 'Luxury'];
 const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -27,6 +28,7 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => voi
 
 export default function Home() {
   const router   = useRouter();
+  const { formatPrice } = useCurrency();
   const [packages, setPackages] = useState<Package[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -174,87 +176,13 @@ export default function Home() {
     }
   }
 
-  // const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
-  const heroVideos = [
-    "https://media.gettyimages.com/id/1280006497/video/t-l-aerial-view-of-dubai-skyline-at-sunrise-dubai-uae.mp4?s=mp4-640x640-gi&k=20&c=mkoDVR6EN9kKijsto5hTOp5Yx1Y6kIpucaEHYT3J9gc=",
-    "https://media.gettyimages.com/id/140813852/video/panoramic-view-of-chemrey-monastery-on-the-mountains.mp4?s=mp4-640x640-gi&k=20&c=-3Wyu_Ym0SWSgQLJngCnodNBrWag2W8U9geIQ5OyLnA=",
-    "https://media.gettyimages.com/id/103256040/video/side-houseboat-sailing-on-kerala-backwaters-cochin-kerala-india.mp4?s=mp4-640x640-gi&k=20&c=tNp68UTFuPlO6O0ZE2zHQzSwUD9ga6B-dRoQm9j55KM="
-  ];
+  const heroImg = "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=2000&auto=format&fit=crop";
   const HERO_FADE_MS = 1200;
-  const HERO_MAX_PLAY_S = 8;
-  const [activeHeroSlot, setActiveHeroSlot] = useState<0 | 1>(0);
-  const [heroSlotSrc, setHeroSlotSrc] = useState<[string, string]>([
-    heroVideos[0],
-    heroVideos[1 % heroVideos.length],
-  ]);
-  const heroVideoRefA = useRef<HTMLVideoElement>(null);
-  const heroVideoRefB = useRef<HTMLVideoElement>(null);
-  const heroSlotRefs = [heroVideoRefA, heroVideoRefB];
-  const nextHeroVideoCursor = useRef(2 % heroVideos.length);
-
-  useEffect(() => {
-    heroSlotRefs[activeHeroSlot].current?.play().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function handleHeroTimeUpdate(slot: 0 | 1) {
-    if (heroVideos.length < 2 || slot !== activeHeroSlot) return;
-    const video = heroSlotRefs[slot].current;
-    if (!video) return;
-    const fadeLeadS = HERO_FADE_MS / 1000;
-    const hitMaxPlay = video.currentTime >= HERO_MAX_PLAY_S - fadeLeadS;
-    const nearNaturalEnd = video.duration ? video.duration - video.currentTime <= fadeLeadS : false;
-    if (hitMaxPlay || nearNaturalEnd) {
-      const inactive = slot === 0 ? 1 : 0;
-      heroSlotRefs[inactive].current?.play().catch(() => {});
-      setActiveHeroSlot(inactive);
-    }
-  }
-
-  function handleHeroTransitionEnd(slot: 0 | 1) {
-    if (heroVideos.length < 2 || slot === activeHeroSlot) return;
-    const video = heroSlotRefs[slot].current;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
-    const nextIndex = nextHeroVideoCursor.current;
-    nextHeroVideoCursor.current = (nextIndex + 1) % heroVideos.length;
-    setHeroSlotSrc(prev => {
-      const next = [...prev] as [string, string];
-      next[slot] = heroVideos[nextIndex];
-      return next;
-    });
-  }
 
   return (
     <MainLayout>
       <section className="hero">
-        <video
-          ref={heroVideoRefA}
-          className="hero-video"
-          src={heroSlotSrc[0]}
-          muted
-          playsInline
-          preload="auto"
-          loop={heroVideos.length < 2}
-          style={{ opacity: activeHeroSlot === 0 ? 1 : 0, transition: `opacity ${HERO_FADE_MS}ms ease` }}
-          onTimeUpdate={() => handleHeroTimeUpdate(0)}
-          onTransitionEnd={() => handleHeroTransitionEnd(0)}
-        />
-        {heroVideos.length > 1 && (
-          <video
-            ref={heroVideoRefB}
-            className="hero-video"
-            src={heroSlotSrc[1]}
-            muted
-            playsInline
-            preload="auto"
-            style={{ opacity: activeHeroSlot === 1 ? 1 : 0, transition: `opacity ${HERO_FADE_MS}ms ease` }}
-            onTimeUpdate={() => handleHeroTimeUpdate(1)}
-            onTransitionEnd={() => handleHeroTransitionEnd(1)}
-          />
-        )}
+        <div className="hero-img" style={{ backgroundImage: `url(${heroImg})` }}></div>
         <div className="hero-content">
           <div className="hero-eyebrow"><span className="line"></span> Kushmud · '26 Collection</div>
           <h1>The trip you'll remember<br/>is <em>the one you almost didn't take.</em></h1>
@@ -473,7 +401,7 @@ export default function Home() {
                     </div>
                     <h4>{p.title}</h4>
                     <div className="trend-foot">
-                      <span className="trend-price"><span style={{fontFamily:'var(--sans)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:6}}>From</span>₹{p.price.toLocaleString()}</span>
+                      <span className="trend-price"><span style={{fontFamily:'var(--sans)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase', marginRight:6}}>From</span>{formatPrice(p.price)}</span>
                       <span style={{fontFamily:'var(--mono)', fontSize:10, color:'var(--muted)', letterSpacing:'0.08em', textTransform:'uppercase'}}>{p.duration} days</span>
                     </div>
                   </div>

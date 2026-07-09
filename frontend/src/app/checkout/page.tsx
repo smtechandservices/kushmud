@@ -6,6 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Icon } from '@/components/Icon';
 import { Package, fetchPackageById, createBooking, isCustomerLoggedIn, fetchCustomerMe } from '@/lib/data';
 import { MainLayout } from '@/components/MainLayout';
+import { useCurrency } from '@/context/CurrencyContext';
 
 function todayInputValue(): string {
   const d = new Date();
@@ -81,6 +82,7 @@ function CheckoutContent() {
   const pkgId = searchParams.get('pkg');
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     if (!isCustomerLoggedIn()) {
@@ -264,7 +266,7 @@ function CheckoutContent() {
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between'}}>
             <span style={{color: 'var(--muted)', fontSize: 13}}>Estimated cost</span>
-            <span style={{color: 'var(--ink)', fontWeight: 500}}>₹{estimatedTotal.toLocaleString()}</span>
+            <span style={{color: 'var(--ink)', fontWeight: 500}}>{formatPrice(estimatedTotal)}</span>
           </div>
         </div>
         <Link href="/" className="btn btn-clay btn-lg" style={{display: 'inline-flex', padding: '14px 28px', textDecoration: 'none'}}>
@@ -404,8 +406,8 @@ function CheckoutContent() {
                 <div className="meta">{trip ? `${trip.dates} · ${pax} traveler${pax === 1 ? '' : 's'}` : `Select a departure date · ${pax} traveler${pax === 1 ? '' : 's'}`}</div>
               </div>
             </div>
-            <div className="summary-row"><span>Trip · ₹{pkg.price.toLocaleString()} × {pax}</span><span>₹{estimatedTotal.toLocaleString()}</span></div>
-            <div className="summary-row total"><span>Estimated cost</span><span>₹{estimatedTotal.toLocaleString()}</span></div>
+            <div className="summary-row"><span>Trip · {formatPrice(pkg.price)} × {pax}</span><span>{formatPrice(estimatedTotal)}</span></div>
+            <div className="summary-row total"><span>Estimated cost</span><span>{formatPrice(estimatedTotal)}</span></div>
             <div style={{display:'flex', alignItems:'flex-start', gap:10, marginTop:18, fontSize:12, color:'var(--muted)', lineHeight:1.5}}>
               <Icon name="shield" size={13} stroke={1.7}/>
               <span>This is an estimate, not a charge. No payment is collected here — our team will confirm final pricing and availability.</span>

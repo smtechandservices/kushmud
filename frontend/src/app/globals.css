@@ -155,6 +155,36 @@ button { font-family: inherit; cursor: pointer; }
 }
 .nav-actions { display: flex; gap: 14px; align-items: center; }
 
+/* ─── Currency switcher ────────────────────────────── */
+.currency-switcher { position: relative; z-index: 70; }
+.currency-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 100px;
+  border: 1px solid var(--line-2); background: var(--paper);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  color: var(--ink-2); cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.currency-btn:hover { border-color: var(--clay); color: var(--ink); }
+.currency-flag { font-size: 14px; line-height: 1; }
+.currency-code { font-weight: 600; }
+.currency-drop {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 160px; background: var(--paper);
+  border: 1px solid var(--line-2); border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(20,16,12,0.12);
+  padding: 4px; animation: sb-in 0.18s ease;
+}
+.currency-opt {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 12px; border: none; background: none;
+  font-family: var(--mono); font-size: 12px; color: var(--ink);
+  cursor: pointer; border-radius: 4px;
+  transition: background 0.12s;
+}
+.currency-opt:hover { background: var(--sand); }
+.currency-opt.active { background: var(--sand); color: var(--clay); font-weight: 600; }
+
 /* ─── Mega dropdown menus ─────────────────────────── */
 .nav-mega {
   position: absolute;

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/MainLayout';
 import { Booking, isCustomerLoggedIn, fetchMyBookings } from '@/lib/data';
+import { useCurrency } from '@/context/CurrencyContext';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'var(--forest)',
@@ -35,6 +36,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 function EnquiryDetailsModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
+  const { formatPrice } = useCurrency();
   return (
     <div
       style={{
@@ -58,7 +60,7 @@ function EnquiryDetailsModal({ booking, onClose }: { booking: Booking; onClose: 
           <DetailRow label="Traveler name" value={booking.name} />
           {booking.email && <DetailRow label="Email" value={booking.email} />}
           {booking.phone && <DetailRow label="Phone" value={booking.phone} />}
-          <DetailRow label="Total" value={`₹${booking.total.toLocaleString()}`} />
+          <DetailRow label="Total" value={formatPrice(booking.total)} />
           {booking.created_at && (
             <DetailRow
               label="Submitted"
@@ -87,6 +89,7 @@ export default function MyEnquiriesPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     if (!isCustomerLoggedIn()) {
@@ -154,7 +157,7 @@ export default function MyEnquiriesPage() {
                 </div>
                 <div className="enquiry-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                   <StatusPill status={b.status} />
-                  <div style={{ fontWeight: 500 }}>₹{b.total.toLocaleString()}</div>
+                  <div style={{ fontWeight: 500 }}>{formatPrice(b.total)}</div>
                   {b.created_at && (
                     <div style={{ fontSize: 12, color: 'var(--muted)' }}>
                       Submitted {new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

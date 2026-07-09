@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Newsreader, Geist, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { Providers } from "@/components/MainLayout";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -35,7 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${newsreader.variable} ${geist.variable} ${jetbrainsMono.variable} antialiased`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <WhatsAppButton />
         <Analytics />
       </body>

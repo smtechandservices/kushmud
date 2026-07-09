@@ -9,6 +9,7 @@ import {
   isCustomerLoggedIn, fetchCustomerMe, customerLogout, Customer,
   fetchRegions, fetchDestinations, fetchStories, Region, Destination, Story,
 } from '@/lib/data';
+import { useCurrency, CURRENCY_LIST } from '@/context/CurrencyContext';
 
 type MegaKey = 'packages' | 'stories' | 'b2b';
 
@@ -52,6 +53,8 @@ export const Nav: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MegaKey | null>(null);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const { currency, setCurrency, currencyInfo } = useCurrency();
 
   const [regions, setRegions] = useState<Region[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -68,7 +71,19 @@ export const Nav: React.FC = () => {
   useEffect(() => {
     setMenuOpen(false);
     setActiveMenu(null);
+    setCurrencyOpen(false);
   }, [pathname]);
+
+  // Close currency dropdown on outside click
+  useEffect(() => {
+    if (!currencyOpen) return;
+    function handleClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.currency-switcher')) setCurrencyOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [currencyOpen]);
 
   const handleLogout = () => {
     customerLogout();
@@ -152,6 +167,32 @@ export const Nav: React.FC = () => {
 
   const navActions = (
     <>
+      <div className="currency-switcher" style={{position:'relative'}}>
+        <button
+          className="currency-btn"
+          onClick={() => setCurrencyOpen(o => !o)}
+          aria-label="Switch currency"
+        >
+          <span className="currency-flag">{currencyInfo.flag}</span>
+          <span className="currency-code">{currency}</span>
+          <Icon name={currencyOpen ? 'chevron-up' : 'chevron-down'} size={10} stroke={2} />
+        </button>
+        {currencyOpen && (
+          <div className="currency-drop">
+            {CURRENCY_LIST.map(c => (
+              <button
+                key={c.code}
+                className={'currency-opt' + (currency === c.code ? ' active' : '')}
+                onClick={() => { setCurrency(c.code); setCurrencyOpen(false); }}
+              >
+                <span>{c.flag}</span>
+                <span style={{flex:1}}>{c.code}</span>
+                <span style={{color:'var(--muted)', fontSize:11}}>{c.symbol}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       {customer ? (
         <Link href="/profile" style={{fontSize:13, color:'var(--ink-2)', borderBottom: '2px solid var(--clay)', padding: 4}}>Hi, {customer.name.split(' ')[0]}</Link>
       ) : (

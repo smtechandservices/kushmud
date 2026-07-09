@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icon } from './Icon';
 import { Package, isCustomerLoggedIn, fetchFavoriteIds, toggleFavorite } from '@/lib/data';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface PackageCardProps {
   pkg: Package;
@@ -12,6 +13,7 @@ interface PackageCardProps {
 export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
   const [fav, setFav] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const isLoggedIn = isCustomerLoggedIn();
@@ -60,7 +62,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg }) => {
       </div>
       <div className="card-foot">
         <div className="card-price">
-          <span className="from">From</span>₹{pkg.price.toLocaleString()}
+          <span className="from">From</span>{formatPrice(pkg.price)}
         </div>
         <Link href={`/packages/${pkg.id}`} className="card-link">
           View itinerary
