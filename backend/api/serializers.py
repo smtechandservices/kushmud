@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from api.models import (
     Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
-    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
+    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
+    B2BInquiry
 )
 
 class PackageSerializer(serializers.ModelSerializer):
@@ -61,6 +62,11 @@ class BookingSerializer(serializers.ModelSerializer):
 class ContactInquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInquiry
+        fields = '__all__'
+
+class B2BInquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = B2BInquiry
         fields = '__all__'
 
 class FAQSerializer(serializers.ModelSerializer):

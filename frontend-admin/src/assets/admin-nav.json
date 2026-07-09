@@ -5,6 +5,7 @@
   { "ic": "globe",    "label": "Destinations",                      "href": "/destinations" },
   { "ic": "package",  "label": "Packages",                          "href": "/packages" },
   { "ic": "inbox",    "label": "Bookings",                          "href": "/bookings" },
+  { "ic": "briefcase", "label": "B2B requests",                     "href": "/b2b-inquiries" },
   { "ic": "users",    "label": "Customers",                         "href": "/customers" },
   { "sec": "Marketing" },
   { "ic": "tag",      "label": "Offers & promotions",               "href": "/offers" },

@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: runserver",
+      "type": "shell",
+      "command": "source .venv/bin/activate && python manage.py runserver",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Frontend: dev (port 3000)",
+      "type": "shell",
+      "command": "npm run dev -- -p 3000",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Frontend-admin: dev (port 3001)",
+      "type": "shell",
+      "command": "npm run dev -- -p 3001",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend-admin"
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "dev"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Run All: backend + frontend + frontend-admin",
+      "dependsOn": [
+        "Backend: runserver",
+        "Frontend: dev (port 3000)",
+        "Frontend-admin: dev (port 3001)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}

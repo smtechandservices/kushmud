@@ -136,6 +136,21 @@ export interface AdminUser {
   is_active?: boolean;
 }
 
+export interface B2BInquiry {
+  id: number;
+  organization: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string | null;
+  inquiry_type: string;
+  group_size?: string | null;
+  requested_margin_percent?: string | null;
+  message: string;
+  status: 'new' | 'contacted' | 'closed';
+  created_at: string;
+}
+
 export interface RegisteredCustomer {
   id: number;
   name: string;
@@ -436,6 +451,23 @@ export async function deleteDestination(name: string): Promise<void> {
 export async function fetchInquiries(): Promise<any[]> {
   const res = await authFetch(getApiUrl('/api/inquiries/'));
   if (!res.ok) throw new Error('Failed to fetch inquiries');
+  return await res.json();
+}
+
+// ── B2B Inquiries ──
+export async function fetchB2BInquiries(): Promise<B2BInquiry[]> {
+  const res = await authFetch(getApiUrl('/api/b2b-inquiries/'));
+  if (!res.ok) throw new Error('Failed to fetch B2B inquiries');
+  return await res.json();
+}
+
+export async function updateB2BInquiryStatus(id: number, status: string): Promise<B2BInquiry> {
+  const res = await authFetch(getApiUrl(`/api/b2b-inquiries/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error('Failed to update inquiry status');
   return await res.json();
 }
 

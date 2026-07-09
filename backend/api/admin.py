@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from api.models import Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry
+from api.models import Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry, B2BInquiry
 
 class PackageAdminForm(forms.ModelForm):
     destination = forms.ChoiceField(choices=[])
@@ -55,3 +55,9 @@ class ContactInquiryAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'email', 'destination', 'created_at')
     list_filter = ('destination',)
     search_fields = ('first_name', 'last_name', 'email', 'destination')
+
+@admin.register(B2BInquiry)
+class B2BInquiryAdmin(admin.ModelAdmin):
+    list_display = ('organization', 'first_name', 'last_name', 'email', 'inquiry_type', 'requested_margin_percent', 'status', 'created_at')
+    list_filter = ('inquiry_type', 'status')
+    search_fields = ('organization', 'first_name', 'last_name', 'email')

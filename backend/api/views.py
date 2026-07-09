@@ -13,7 +13,8 @@ from django.utils import timezone
 from api.authentication import CustomerJWTAuthentication, StaffOrCustomerJWTAuthentication
 from api.models import (
     Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
-    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer
+    FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
+    B2BInquiry
 )
 from django.contrib.auth.models import User
 from api.serializers import (
@@ -21,7 +22,7 @@ from api.serializers import (
     TestimonialSerializer, BookingSerializer, ContactInquirySerializer,
     FAQSerializer, StorySerializer, NewsletterSubscriberSerializer, UserSerializer,
     CustomerSerializer, CustomerSignupSerializer, JobOpeningSerializer, PackageReviewSerializer,
-    FavoriteSerializer, AdminUserSerializer, FlyerSerializer
+    FavoriteSerializer, AdminUserSerializer, FlyerSerializer, B2BInquirySerializer
 )
 
 class IsSuperUser(permissions.BasePermission):
@@ -138,6 +139,15 @@ class BookingViewSet(viewsets.ModelViewSet):
 class ContactInquiryViewSet(viewsets.ModelViewSet):
     queryset = ContactInquiry.objects.all().order_by('-created_at')
     serializer_class = ContactInquirySerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+class B2BInquiryViewSet(viewsets.ModelViewSet):
+    queryset = B2BInquiry.objects.all().order_by('-created_at')
+    serializer_class = B2BInquirySerializer
 
     def get_permissions(self):
         if self.action == 'create':

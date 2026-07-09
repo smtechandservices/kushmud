@@ -213,3 +213,46 @@ class ContactInquiry(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.destination}"
+
+class B2BInquiry(models.Model):
+    TYPE_CORPORATE = 'Corporate Custom Travel'
+    TYPE_SPORTS_TEAM = 'Sports Travel — Team'
+    TYPE_SPORTS_INDIVIDUAL = 'Sports Travel — Individual'
+    TYPE_TRAVEL_AGENCY = 'Travel Agency — Bulk Reseller'
+    TYPE_OTHER = 'Other'
+    TYPE_CHOICES = [
+        (TYPE_CORPORATE, TYPE_CORPORATE),
+        (TYPE_SPORTS_TEAM, TYPE_SPORTS_TEAM),
+        (TYPE_SPORTS_INDIVIDUAL, TYPE_SPORTS_INDIVIDUAL),
+        (TYPE_TRAVEL_AGENCY, TYPE_TRAVEL_AGENCY),
+        (TYPE_OTHER, TYPE_OTHER),
+    ]
+
+    STATUS_NEW = 'new'
+    STATUS_CONTACTED = 'contacted'
+    STATUS_CLOSED = 'closed'
+    STATUS_CHOICES = [
+        (STATUS_NEW, 'New'),
+        (STATUS_CONTACTED, 'Contacted'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    organization = models.CharField(max_length=200)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    inquiry_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default=TYPE_OTHER)
+    group_size = models.CharField(max_length=50, null=True, blank=True)
+    requested_margin_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'B2B Inquiry'
+        verbose_name_plural = 'B2B Inquiries'
+
+    def __str__(self):
+        return f"{self.organization} - {self.inquiry_type}"

@@ -426,3 +426,25 @@ export async function createContactInquiry(inquiryData: any): Promise<any> {
   return await res.json();
 }
 
+export interface B2BInquiryPayload {
+  organization: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  inquiry_type: string;
+  group_size?: string;
+  requested_margin_percent?: string;
+  message: string;
+}
+
+export async function createB2BInquiry(inquiryData: B2BInquiryPayload): Promise<any> {
+  const res = await fetch(getApiUrl('/api/b2b-inquiries/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(inquiryData),
+  });
+  if (!res.ok) throw new Error('Failed to submit inquiry');
+  return await res.json();
+}
+

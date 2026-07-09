@@ -118,6 +118,8 @@ export default function Home() {
   const [where,    setWhere]    = useState('Anywhere');
   const [style,    setStyle]    = useState('');
   const [adults,   setAdults]   = useState(2);
+  const [children, setChildren] = useState(0);
+  const [infants,  setInfants]  = useState(0);
   const [months,   setMonths]   = useState<number[]>([]);
   const barRef = useRef<HTMLDivElement>(null);
   useClickOutside(barRef, () => setOpen(null));
@@ -132,8 +134,16 @@ export default function Home() {
     if (style)                p.set('type', style);
     if (months.length > 0)    p.set('months', months.join(','));
     if (adults !== 2)         p.set('adults', String(adults));
+    if (children > 0)         p.set('children', String(children));
+    if (infants > 0)          p.set('infants', String(infants));
     router.push('/packages' + (p.toString() ? '?' + p.toString() : ''));
   }
+
+  const travelersLabel = [
+    `${adults} adult${adults !== 1 ? 's' : ''}`,
+    children > 0 ? `${children} child${children !== 1 ? 'ren' : ''}` : null,
+    infants > 0 ? `${infants} infant${infants !== 1 ? 's' : ''}` : null,
+  ].filter(Boolean).join(' · ');
 
   const whenLabel = months.length === 0
     ? 'Any month'
@@ -334,7 +344,7 @@ export default function Home() {
             onClick={() => setOpen(open === 'travelers' ? null : 'travelers')}
           >
             <label>Travelers</label>
-            <div className="val">{adults} adult{adults !== 1 ? 's' : ''}</div>
+            <div className="val">{travelersLabel}</div>
             {open === 'travelers' && (
               <div className="sb-drop" onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 0' }}>
@@ -342,12 +352,40 @@ export default function Home() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <button
                       onClick={() => setAdults(a => Math.max(1, a - 1))}
-                      style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >−</button>
                     <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 600 }}>{adults}</span>
                     <button
                       onClick={() => setAdults(a => Math.min(12, a + 1))}
-                      style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >+</button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 0', borderTop: '1px solid var(--line)', marginTop: 8, paddingTop: 12 }}>
+                  <span style={{ fontSize: 14 }}>Children<span style={{ display: 'block', fontSize: 11, color: 'var(--muted)' }}>Ages 2–11</span></span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button
+                      onClick={() => setChildren(c => Math.max(0, c - 1))}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >−</button>
+                    <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 600 }}>{children}</span>
+                    <button
+                      onClick={() => setChildren(c => Math.min(12, c + 1))}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >+</button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '4px 0', borderTop: '1px solid var(--line)', marginTop: 8, paddingTop: 12 }}>
+                  <span style={{ fontSize: 14 }}>Infants<span style={{ display: 'block', fontSize: 11, color: 'var(--muted)' }}>Under 2</span></span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button
+                      onClick={() => setInfants(i => Math.max(0, i - 1))}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >−</button>
+                    <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 600 }}>{infants}</span>
+                    <button
+                      onClick={() => setInfants(i => Math.min(12, i + 1))}
+                      style={{ color: 'var(--ink)', width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--line-2)', background: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >+</button>
                   </div>
                 </div>

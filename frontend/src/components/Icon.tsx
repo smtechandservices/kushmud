@@ -51,6 +51,10 @@ export const Icon: React.FC<IconProps> = ({ name, size = 16, stroke = 1.5, class
     case 'mail': return <svg {...props}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>;
     case 'lock': return <svg {...props}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>;
     case 'menu': return <svg {...props}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
+    case 'briefcase': return <svg {...props}><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M2 13h20"/></svg>;
+    case 'trophy': return <svg {...props}><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a2 2 0 0 0 0 4h1M17 5h3a2 2 0 0 1 0 4h-1"/></svg>;
+    case 'chevron-down': return <svg {...props}><path d="m6 9 6 6 6-6"/></svg>;
+    case 'percent': return <svg {...props}><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>;
     default: return null;
   }
 };

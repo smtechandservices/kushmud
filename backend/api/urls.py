@@ -6,7 +6,8 @@ from api.views import (
     FAQViewSet, StoryViewSet, NewsletterSubscriberViewSet, MeView, SiteStatsView,
     ChangePasswordView, CustomerViewSet, CustomerSignupView, CustomerLoginView,
     CustomerMeView, JobOpeningViewSet, PackageReviewViewSet, FavoriteViewSet,
-    CustomerNewsletterView, AnalyticsView, AdminUserViewSet, FlyerViewSet
+    CustomerNewsletterView, AnalyticsView, AdminUserViewSet, FlyerViewSet,
+    B2BInquiryViewSet
 )
 
 router = DefaultRouter()
@@ -19,6 +20,7 @@ router.register(r'flyers', FlyerViewSet, basename='flyer')
 router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
 router.register(r'bookings', BookingViewSet, basename='booking')
 router.register(r'inquiries', ContactInquiryViewSet, basename='inquiry')
+router.register(r'b2b-inquiries', B2BInquiryViewSet, basename='b2b-inquiry')
 router.register(r'faqs', FAQViewSet, basename='faq')
 router.register(r'stories', StoryViewSet, basename='story')
 router.register(r'newsletter-subscribers', NewsletterSubscriberViewSet, basename='newsletter-subscriber')
