@@ -525,7 +525,7 @@ export default function PackagesPage() {
                 <div style={{borderRadius:4, overflow:'hidden', height:120, backgroundImage:`url(${form.img})`, backgroundSize:'cover', backgroundPosition:'center', border:'1px solid var(--line)'}} />
               )}
 
-              <Field label="Blurb">
+              <Field label="Blurb/Overview">
                 <textarea value={form.blurb} onChange={set('blurb')} rows={4} style={{resize:'vertical'}} />
               </Field>
 

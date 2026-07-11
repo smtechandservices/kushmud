@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from api.models import Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry, B2BInquiry
+from api.models import Package, Destination, Region, Location, Offer, Testimonial, Booking, ContactInquiry, B2BInquiry, CustomPackageRequest
 
 class PackageAdminForm(forms.ModelForm):
     destination = forms.ChoiceField(choices=[])
@@ -28,11 +28,22 @@ class RegionAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
+class LocationInline(admin.TabularInline):
+    model = Location
+    extra = 1
+
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
     list_display = ('name', 'region', 'count', 'tag', 'size')
     list_filter = ('region',)
     search_fields = ('name',)
+    inlines = [LocationInline]
+
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'destination', 'order')
+    list_filter = ('destination',)
+    search_fields = ('name', 'destination__name')
 
 @admin.register(Offer)
 class OfferAdmin(admin.ModelAdmin):
@@ -61,3 +72,10 @@ class B2BInquiryAdmin(admin.ModelAdmin):
     list_display = ('organization', 'first_name', 'last_name', 'email', 'inquiry_type', 'requested_margin_percent', 'status', 'created_at')
     list_filter = ('inquiry_type', 'status')
     search_fields = ('organization', 'first_name', 'last_name', 'email')
+
+@admin.register(CustomPackageRequest)
+class CustomPackageRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'customer', 'region', 'traveler_type', 'travel_date', 'estimated_days', 'status', 'created_at')
+    list_filter = ('traveler_type', 'status', 'region')
+    search_fields = ('customer__name', 'customer__email')
+    filter_horizontal = ('destinations', 'locations')

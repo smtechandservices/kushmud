@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Icon } from '@/components/Icon';
-import { fetchDestinations, createDestination, updateDestination, deleteDestination, fetchRegions, Destination, Region } from '@/lib/data';
+import {
+  fetchDestinations, createDestination, updateDestination, deleteDestination, fetchRegions, Destination, Region,
+  fetchLocations, createLocation, updateLocation, deleteLocation, Location,
+} from '@/lib/data';
 
 const BLANK_DEST = {
   name: '',
@@ -21,6 +24,14 @@ export default function DestinationsPage() {
   const [newDest, setNewDest] = useState(BLANK_DEST);
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState('All');
+
+  const [showLocationsModal, setShowLocationsModal] = useState(false);
+  const [locationsDestName, setLocationsDestName] = useState<string | null>(null);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(false);
+  const [newLocation, setNewLocation] = useState({ name: '', description: '', img: '' });
+  const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
+  const [editingLocation, setEditingLocation] = useState({ name: '', description: '', img: '' });
 
   const loadData = async () => {
     try {
@@ -48,6 +59,72 @@ export default function DestinationsPage() {
     setEditingName(d.name);
     setNewDest({ name: d.name, region: d.region, img: d.img, tag: d.tag });
     setShowModal(true);
+  };
+
+  const openLocationsModal = (d: Destination) => {
+    setLocationsDestName(d.name);
+    setShowLocationsModal(true);
+    setLocationsLoading(true);
+    fetchLocations(d.name)
+      .then(setLocations)
+      .catch(console.error)
+      .finally(() => setLocationsLoading(false));
+  };
+
+  const closeLocationsModal = () => {
+    setShowLocationsModal(false);
+    setLocationsDestName(null);
+    resetLocationForms();
+  };
+
+  const resetLocationForms = () => {
+    setLocations([]);
+    setNewLocation({ name: '', description: '', img: '' });
+    setEditingLocationId(null);
+  };
+
+  const handleAddLocation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!locationsDestName || !newLocation.name.trim() || !newLocation.description.trim() || !newLocation.img.trim()) {
+      alert('Name, description, and image URL are all required.');
+      return;
+    }
+    try {
+      const created = await createLocation({ destination: locationsDestName, ...newLocation });
+      setLocations(prev => [...prev, created]);
+      setNewLocation({ name: '', description: '', img: '' });
+    } catch (e) {
+      alert('Failed to add location');
+    }
+  };
+
+  const startEditLocation = (loc: Location) => {
+    setEditingLocationId(loc.id);
+    setEditingLocation({ name: loc.name, description: loc.description ?? '', img: loc.img ?? '' });
+  };
+
+  const handleSaveLocation = async (id: number) => {
+    if (!editingLocation.name.trim() || !editingLocation.description.trim() || !editingLocation.img.trim()) {
+      alert('Name, description, and image URL are all required.');
+      return;
+    }
+    try {
+      const updated = await updateLocation(id, editingLocation);
+      setLocations(prev => prev.map(l => (l.id === id ? updated : l)));
+      setEditingLocationId(null);
+    } catch (e) {
+      alert('Failed to update location');
+    }
+  };
+
+  const handleDeleteLocation = async (id: number) => {
+    if (!confirm('Delete this location?')) return;
+    try {
+      await deleteLocation(id);
+      setLocations(prev => prev.filter(l => l.id !== id));
+    } catch (e) {
+      alert('Failed to delete location');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,6 +249,13 @@ export default function DestinationsPage() {
                         <button
                           className="btn btn-sm btn-ghost"
                           style={{padding:'4px 8px'}}
+                          onClick={() => openLocationsModal(d)}
+                        >
+                          Things to do
+                        </button>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          style={{padding:'4px 8px'}}
                           onClick={() => openEditModal(d)}
                         >
                           Edit
@@ -203,7 +287,8 @@ export default function DestinationsPage() {
           <div style={{
             background:'var(--paper)', border:'1px solid var(--line)',
             borderRadius:8, padding:32, maxWidth:480, width:'100%',
-            boxShadow:'0 20px 40px rgba(0,0,0,0.15)'
+            boxShadow:'0 20px 40px rgba(0,0,0,0.15)',
+            maxHeight:'85vh', overflowY:'auto'
           }}>
             <h3 style={{fontSize:24, marginBottom:20}}>{editingName ? 'Edit Destination' : 'Add New Destination'}</h3>
             <form onSubmit={handleSubmit} style={{display:'flex', flexDirection:'column', gap:16}}>
@@ -248,11 +333,158 @@ export default function DestinationsPage() {
                 <label>Cover Image URL</label>
                 <input required placeholder="https://images.unsplash.com/…" value={newDest.img} onChange={e => setNewDest({...newDest, img: e.target.value})}/>
               </div>
+
               <div style={{display:'flex', justifyContent:'flex-end', gap:12, marginTop:12}}>
                 <button type="button" className="btn btn-ghost" onClick={() => { setShowModal(false); setEditingName(null); }}>Cancel</button>
                 <button type="submit" className="btn btn-primary">{editingName ? 'Save Changes' : 'Add Destination'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Things To Do (Locations) Modal ── */}
+      {showLocationsModal && (
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(28,25,22,0.6)',
+          backdropFilter:'blur(4px)', display:'flex', alignItems:'center',
+          justifyContent:'center', zIndex:1000, padding:24
+        }}>
+          <div style={{
+            background:'var(--paper)', border:'1px solid var(--line)',
+            borderRadius:8, padding:32, maxWidth:480, width:'100%',
+            boxShadow:'0 20px 40px rgba(0,0,0,0.15)',
+            maxHeight:'85vh', overflowY:'auto'
+          }}>
+            <h3 style={{fontSize:24, marginBottom:4}}>Things to do</h3>
+            <p style={{fontSize:13, color:'var(--muted)', marginBottom:20}}>{locationsDestName}</p>
+
+            {locationsLoading ? (
+              <p style={{fontSize:13, color:'var(--muted)'}}>Loading…</p>
+            ) : (
+              <>
+                {locations.length === 0 && (
+                  <p style={{fontSize:13, color:'var(--muted)', marginBottom:10}}>No locations added yet.</p>
+                )}
+                <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:16}}>
+                  {locations.map(loc => (
+                    <div key={loc.id} style={{border:'1px solid var(--line)', borderRadius:6, padding:10}}>
+                      {editingLocationId === loc.id ? (
+                        <div style={{display:'flex', flexDirection:'column', gap:12}}>
+                          <div className="field-group">
+                            <label>Name</label>
+                            <input
+                              placeholder="Name"
+                              value={editingLocation.name}
+                              onChange={e => setEditingLocation({...editingLocation, name: e.target.value})}
+                            />
+                          </div>
+                          <div className="field-group">
+                            <label>Description</label>
+                            <input
+                              required
+                              placeholder="Description"
+                              value={editingLocation.description}
+                              onChange={e => setEditingLocation({...editingLocation, description: e.target.value})}
+                            />
+                          </div>
+                          <div className="field-group">
+                            <label>Image URL</label>
+                            <input
+                              required
+                              placeholder="Image URL"
+                              value={editingLocation.img}
+                              onChange={e => setEditingLocation({...editingLocation, img: e.target.value})}
+                            />
+                          </div>
+                          {editingLocation.img && (
+                            <div
+                              style={{
+                                width:'100%', height:100, borderRadius:4,
+                                backgroundImage: `url(${editingLocation.img})`,
+                                backgroundSize:'cover', backgroundPosition:'center',
+                                backgroundColor:'#f4ede0',
+                              }}
+                            />
+                          )}
+                          <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
+                            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditingLocationId(null)}>Cancel</button>
+                            <button type="button" className="btn btn-primary btn-sm" onClick={() => handleSaveLocation(loc.id)}>Save</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8}}>
+                          <div style={{display:'flex', gap:10, alignItems:'flex-start'}}>
+                            <div
+                              style={{
+                                width:48, height:48, borderRadius:4, flexShrink:0,
+                                backgroundImage: loc.img ? `url(${loc.img})` : undefined,
+                                backgroundSize:'cover', backgroundPosition:'center',
+                                backgroundColor:'#f4ede0',
+                              }}
+                            />
+                            <div>
+                              <div style={{fontSize:14, fontWeight:600}}>{loc.name}</div>
+                              {loc.description && <div style={{fontSize:12, color:'var(--muted)', marginTop:2}}>{loc.description}</div>}
+                            </div>
+                          </div>
+                          <div style={{display:'flex', gap:4, flexShrink:0}}>
+                            <button type="button" className="btn btn-sm btn-ghost" style={{padding:'4px 8px'}} onClick={() => startEditLocation(loc)}>Edit</button>
+                            <button type="button" className="btn btn-sm btn-ghost" style={{padding:'4px 8px', color:'#c79a4a'}} onClick={() => handleDeleteLocation(loc.id)}>Delete</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{display:'flex', flexDirection:'column', gap:12, background:'#f4ede0', borderRadius:6, padding:14}}>
+                  <div className="field-group">
+                    <label>Name</label>
+                    <input
+                      required
+                      placeholder="e.g. Miracle Garden"
+                      value={newLocation.name}
+                      onChange={e => setNewLocation({...newLocation, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label>Description</label>
+                    <input
+                      required
+                      placeholder="Description"
+                      value={newLocation.description}
+                      onChange={e => setNewLocation({...newLocation, description: e.target.value})}
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label>Image URL</label>
+                    <input
+                      required
+                      placeholder="Image URL"
+                      value={newLocation.img}
+                      onChange={e => setNewLocation({...newLocation, img: e.target.value})}
+                    />
+                  </div>
+                  {newLocation.img && (
+                    <div
+                      style={{
+                        width:'100%', height:100, borderRadius:4,
+                        backgroundImage: `url(${newLocation.img})`,
+                        backgroundSize:'cover', backgroundPosition:'center',
+                        backgroundColor:'#f4ede0',
+                      }}
+                    />
+                  )}
+                  <button type="button" className="btn btn-ghost btn-sm" style={{alignSelf:'flex-end'}} onClick={handleAddLocation}>
+                    <Icon name="plus" size={13}/> Add location
+                  </button>
+                </div>
+              </>
+            )}
+
+            <div style={{display:'flex', justifyContent:'flex-end', marginTop:20}}>
+              <button type="button" className="btn btn-primary" onClick={closeLocationsModal}>Done</button>
+            </div>
           </div>
         </div>
       )}

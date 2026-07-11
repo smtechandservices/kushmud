@@ -42,6 +42,15 @@ export interface Region {
   name: string;
 }
 
+export interface Location {
+  id: number;
+  destination: string;
+  name: string;
+  description: string;
+  img: string;
+  order: number;
+}
+
 export interface Destination {
   name: string;
   region: string;
@@ -49,6 +58,7 @@ export interface Destination {
   img: string;
   tag: string;
   size?: 'lg';
+  locations?: Location[];
 }
 
 export interface Offer {
@@ -325,6 +335,12 @@ export async function fetchRegions(): Promise<Region[]> {
   return await res.json();
 }
 
+export async function fetchLocations(destinationName: string): Promise<Location[]> {
+  const res = await fetch(getApiUrl(`/api/locations/?destination=${encodeURIComponent(destinationName)}`));
+  if (!res.ok) throw new Error('Failed to fetch locations');
+  return await res.json();
+}
+
 export async function fetchOffers(): Promise<Offer[]> {
   const res = await fetch(getApiUrl('/api/offers/'));
   if (!res.ok) throw new Error('Failed to fetch offers');
@@ -459,5 +475,66 @@ export async function createB2BInquiry(inquiryData: B2BInquiryPayload): Promise<
   });
   if (!res.ok) throw new Error('Failed to submit inquiry');
   return await res.json();
+}
+
+export interface CustomPackageRequestPayload {
+  region: string;
+  destinations: string[];
+  locations: number[];
+  traveler_type: 'reseller' | 'self';
+  requested_margin_percent?: string;
+  pax_adults: number;
+  pax_children: number;
+  pax_infants: number;
+  estimated_days?: number;
+  travel_date?: string;
+  hotel_preferences?: string;
+  travel_preferences?: string;
+  dietary_preferences?: string;
+  additional_notes?: string;
+}
+
+export async function createCustomPackageRequest(data: CustomPackageRequestPayload): Promise<any> {
+  const res = await fetch(getApiUrl('/api/custom-package-requests/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getCustomerAuthHeaders() },
+    body: JSON.stringify(data),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    const message = Object.values(body).flat().join(' ') || 'Failed to submit request.';
+    throw new Error(message);
+  }
+  return body;
+}
+
+export interface CustomPackageRequest {
+  id: number;
+  region: string;
+  region_name?: string;
+  destinations: string[];
+  destination_names?: string[];
+  locations: number[];
+  location_names?: string[];
+  traveler_type: 'reseller' | 'self';
+  requested_margin_percent?: string | null;
+  pax_adults: number;
+  pax_children: number;
+  pax_infants: number;
+  estimated_days?: number | null;
+  travel_date?: string | null;
+  hotel_preferences?: string | null;
+  travel_preferences?: string | null;
+  dietary_preferences?: string | null;
+  additional_notes?: string | null;
+  status: 'new' | 'contacted' | 'closed';
+  created_at: string;
+}
+
+export function fetchMyCustomPackageRequests(): Promise<CustomPackageRequest[]> {
+  if (!isCustomerLoggedIn()) return Promise.resolve([]);
+  return fetch(getApiUrl('/api/custom-package-requests/mine/'), { headers: getCustomerAuthHeaders() })
+    .then(res => (res.ok ? res.json() : []))
+    .catch(() => []);
 }
 

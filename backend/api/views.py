@@ -12,18 +12,18 @@ from django.db.models import Sum, Avg, Q, Count
 from django.utils import timezone
 from api.authentication import CustomerJWTAuthentication, StaffOrCustomerJWTAuthentication
 from api.models import (
-    Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
+    Package, Destination, Region, Location, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
-    B2BInquiry, SiteEffectSetting
+    B2BInquiry, SiteEffectSetting, CustomPackageRequest
 )
 from django.contrib.auth.models import User
 from api.serializers import (
-    PackageSerializer, DestinationSerializer, RegionSerializer, OfferSerializer,
+    PackageSerializer, DestinationSerializer, RegionSerializer, LocationSerializer, OfferSerializer,
     TestimonialSerializer, BookingSerializer, ContactInquirySerializer,
     FAQSerializer, StorySerializer, NewsletterSubscriberSerializer, UserSerializer,
     CustomerSerializer, CustomerSignupSerializer, JobOpeningSerializer, PackageReviewSerializer,
     FavoriteSerializer, AdminUserSerializer, FlyerSerializer, B2BInquirySerializer,
-    SiteEffectSettingSerializer
+    SiteEffectSettingSerializer, CustomPackageRequestSerializer
 )
 
 class IsSuperUser(permissions.BasePermission):
@@ -79,6 +79,17 @@ class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all()
     serializer_class = DestinationSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class LocationViewSet(viewsets.ModelViewSet):
+    serializer_class = LocationSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = Location.objects.all()
+        destination = self.request.query_params.get('destination')
+        if destination:
+            qs = qs.filter(destination_id=destination)
+        return qs
 
 class OfferViewSet(viewsets.ModelViewSet):
     queryset = Offer.objects.all()
@@ -154,6 +165,25 @@ class B2BInquiryViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+class CustomPackageRequestViewSet(viewsets.ModelViewSet):
+    queryset = CustomPackageRequest.objects.all().order_by('-created_at')
+    serializer_class = CustomPackageRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_authenticators(self):
+        action = getattr(self, 'action_map', {}).get(self.request.method.lower())
+        if action in ('create', 'mine'):
+            return [CustomerJWTAuthentication()]
+        return super().get_authenticators()
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user if isinstance(self.request.user, Customer) else None)
+
+    @action(detail=False, methods=['get'])
+    def mine(self, request):
+        qs = CustomPackageRequest.objects.filter(customer=request.user).order_by('-created_at')
+        return Response(CustomPackageRequestSerializer(qs, many=True).data)
 
 class FAQViewSet(viewsets.ModelViewSet):
     queryset = FAQ.objects.all()

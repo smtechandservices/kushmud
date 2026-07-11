@@ -93,6 +93,67 @@ class Destination(models.Model):
     def __str__(self):
         return self.name
 
+class Location(models.Model):
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='locations')
+    name = models.CharField(max_length=150)
+    description = models.TextField()
+    img = models.TextField()
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"{self.name} ({self.destination_id})"
+
+class CustomPackageRequest(models.Model):
+    TRAVELER_RESELLER = 'reseller'
+    TRAVELER_SELF = 'self'
+    TRAVELER_TYPE_CHOICES = [
+        (TRAVELER_RESELLER, 'Reseller'),
+        (TRAVELER_SELF, 'Self / Individual'),
+    ]
+
+    STATUS_NEW = 'new'
+    STATUS_CONTACTED = 'contacted'
+    STATUS_CLOSED = 'closed'
+    STATUS_CHOICES = [
+        (STATUS_NEW, 'New'),
+        (STATUS_CONTACTED, 'Contacted'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL, related_name='custom_package_requests')
+    region = models.ForeignKey(Region, on_delete=models.PROTECT, related_name='custom_package_requests')
+    destinations = models.ManyToManyField(Destination, related_name='custom_package_requests')
+    locations = models.ManyToManyField(Location, blank=True, related_name='custom_package_requests')
+
+    traveler_type = models.CharField(max_length=20, choices=TRAVELER_TYPE_CHOICES, default=TRAVELER_SELF)
+    requested_margin_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    pax_adults = models.IntegerField(default=1)
+    pax_children = models.IntegerField(default=0)
+    pax_infants = models.IntegerField(default=0)
+
+    estimated_days = models.IntegerField(null=True, blank=True)
+    travel_date = models.DateField(null=True, blank=True)
+
+    hotel_preferences = models.TextField(null=True, blank=True)
+    travel_preferences = models.TextField(null=True, blank=True)
+    dietary_preferences = models.TextField(null=True, blank=True)
+    additional_notes = models.TextField(null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Custom Package Request'
+        verbose_name_plural = 'Custom Package Requests'
+
+    def __str__(self):
+        return f"Custom request #{self.pk} ({self.get_traveler_type_display()})"
+
 class Offer(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     tag = models.CharField(max_length=100)

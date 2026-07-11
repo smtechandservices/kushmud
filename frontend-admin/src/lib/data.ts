@@ -42,6 +42,15 @@ export interface Region {
   name: string;
 }
 
+export interface Location {
+  id: number;
+  destination: string;
+  name: string;
+  description: string;
+  img: string;
+  order: number;
+}
+
 export interface Destination {
   name: string;
   region: string;
@@ -49,6 +58,7 @@ export interface Destination {
   img: string;
   tag: string;
   size?: 'lg';
+  locations?: Location[];
 }
 
 export interface Offer {
@@ -154,6 +164,33 @@ export interface B2BInquiry {
   group_size?: string | null;
   requested_margin_percent?: string | null;
   message: string;
+  status: 'new' | 'contacted' | 'closed';
+  created_at: string;
+}
+
+export interface CustomPackageRequest {
+  id: number;
+  customer: number | null;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  region: string;
+  region_name?: string;
+  destinations: string[];
+  destination_names?: string[];
+  locations: number[];
+  location_names?: string[];
+  traveler_type: 'reseller' | 'self';
+  requested_margin_percent?: string | null;
+  pax_adults: number;
+  pax_children: number;
+  pax_infants: number;
+  estimated_days: number | null;
+  travel_date: string | null;
+  hotel_preferences?: string | null;
+  travel_preferences?: string | null;
+  dietary_preferences?: string | null;
+  additional_notes?: string | null;
   status: 'new' | 'contacted' | 'closed';
   created_at: string;
 }
@@ -470,6 +507,40 @@ export async function deleteDestination(name: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete destination');
 }
 
+// ── Locations (things to do) ──
+export async function fetchLocations(destinationName: string): Promise<Location[]> {
+  const res = await authFetch(getApiUrl(`/api/locations/?destination=${encodeURIComponent(destinationName)}`));
+  if (!res.ok) throw new Error('Failed to fetch locations');
+  return await res.json();
+}
+
+export async function createLocation(data: { destination: string; name: string; description: string; img: string; order?: number }): Promise<Location> {
+  const res = await authFetch(getApiUrl('/api/locations/'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create location');
+  return await res.json();
+}
+
+export async function updateLocation(id: number, data: Partial<Pick<Location, 'name' | 'description' | 'img' | 'order'>>): Promise<Location> {
+  const res = await authFetch(getApiUrl(`/api/locations/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update location');
+  return await res.json();
+}
+
+export async function deleteLocation(id: number): Promise<void> {
+  const res = await authFetch(getApiUrl(`/api/locations/${id}/`), {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete location');
+}
+
 // ── Contact Inquiries ──
 export async function fetchInquiries(): Promise<any[]> {
   const res = await authFetch(getApiUrl('/api/inquiries/'));
@@ -491,6 +562,23 @@ export async function updateB2BInquiryStatus(id: number, status: string): Promis
     body: JSON.stringify({ status }),
   });
   if (!res.ok) throw new Error('Failed to update inquiry status');
+  return await res.json();
+}
+
+// ── Custom Package Requests ──
+export async function fetchCustomPackageRequests(): Promise<CustomPackageRequest[]> {
+  const res = await authFetch(getApiUrl('/api/custom-package-requests/'));
+  if (!res.ok) throw new Error('Failed to fetch custom package requests');
+  return await res.json();
+}
+
+export async function updateCustomPackageRequestStatus(id: number, status: string): Promise<CustomPackageRequest> {
+  const res = await authFetch(getApiUrl(`/api/custom-package-requests/${id}/`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error('Failed to update request status');
   return await res.json();
 }
 

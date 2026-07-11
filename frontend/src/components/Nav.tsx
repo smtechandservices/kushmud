@@ -20,6 +20,8 @@ const NAV_ITEMS: { href: string; label: string; mega?: MegaKey }[] = [
   { href: '/stories', label: 'Stories', mega: 'stories' },
   { href: '/b2b', label: 'B2B', mega: 'b2b' },
   { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/custom-package', label: 'Build a Trip' },
 ];
 
 const B2B_OPTIONS = [

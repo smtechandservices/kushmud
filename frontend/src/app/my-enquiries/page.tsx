@@ -4,7 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/MainLayout';
-import { Booking, isCustomerLoggedIn, fetchMyBookings } from '@/lib/data';
+import {
+  Booking, isCustomerLoggedIn, fetchMyBookings,
+  CustomPackageRequest, fetchMyCustomPackageRequests,
+} from '@/lib/data';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'var(--forest)',
@@ -12,8 +15,14 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'var(--muted)',
 };
 
-function StatusPill({ status }: { status: string }) {
-  const color = STATUS_COLORS[status] || 'var(--muted)';
+const REQUEST_STATUS_COLORS: Record<string, string> = {
+  new: 'var(--clay)',
+  contacted: 'var(--forest)',
+  closed: 'var(--muted)',
+};
+
+function StatusPill({ status, colors = STATUS_COLORS }: { status: string; colors?: Record<string, string> }) {
+  const color = colors[status] || 'var(--muted)';
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -23,6 +32,13 @@ function StatusPill({ status }: { status: string }) {
       {status}
     </span>
   );
+}
+
+function formatPax(r: CustomPackageRequest) {
+  const parts = [`${r.pax_adults} adult${r.pax_adults !== 1 ? 's' : ''}`];
+  if (r.pax_children) parts.push(`${r.pax_children} child${r.pax_children !== 1 ? 'ren' : ''}`);
+  if (r.pax_infants) parts.push(`${r.pax_infants} infant${r.pax_infants !== 1 ? 's' : ''}`);
+  return parts.join(', ');
 }
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -81,12 +97,80 @@ function EnquiryDetailsModal({ booking, onClose }: { booking: Booking; onClose: 
   );
 }
 
+function CustomRequestDetailsModal({ request: r, onClose }: { request: CustomPackageRequest; onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 200, padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 8, padding: 32, maxWidth: 460, width: '100%', maxHeight: '85vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>Request #{r.id}</div>
+        <h3 style={{ fontSize: 22, marginBottom: 16 }}>{r.region_name || r.region}</h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <DetailRow label="Status" value={<StatusPill status={r.status} colors={REQUEST_STATUS_COLORS} />} />
+          <DetailRow label="Destinations" value={(r.destination_names || []).join(', ') || '—'} />
+          <DetailRow label="Things to do" value={(r.location_names || []).join(', ') || '—'} />
+          <DetailRow label="Traveling as" value={r.traveler_type === 'reseller' ? 'Reseller' : 'Self / individual'} />
+          {r.traveler_type === 'reseller' && r.requested_margin_percent && (
+            <DetailRow label="Requested margin" value={`${r.requested_margin_percent}%`} />
+          )}
+          <DetailRow label="Travelers" value={formatPax(r)} />
+          <DetailRow label="Travel date" value={r.travel_date ? new Date(r.travel_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not specified'} />
+          <DetailRow label="Estimated trip length" value={r.estimated_days ? `${r.estimated_days} day${r.estimated_days !== 1 ? 's' : ''}` : 'Not specified'} />
+          <DetailRow
+            label="Submitted"
+            value={new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          />
+          {r.hotel_preferences && (
+            <div style={{ padding: '10px 0' }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>Hotel preferences</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>{r.hotel_preferences}</div>
+            </div>
+          )}
+          {r.travel_preferences && (
+            <div style={{ padding: '10px 0' }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>Travel preferences</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>{r.travel_preferences}</div>
+            </div>
+          )}
+          {r.dietary_preferences && (
+            <div style={{ padding: '10px 0' }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>Dietary preferences</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>{r.dietary_preferences}</div>
+            </div>
+          )}
+          {r.additional_notes && (
+            <div style={{ padding: '10px 0' }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 4 }}>Additional notes</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5 }}>{r.additional_notes}</div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+          <button className="btn btn-clay btn-sm" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MyEnquiriesPage() {
   const router = useRouter();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [customRequests, setCustomRequests] = useState<CustomPackageRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<CustomPackageRequest | null>(null);
 
   useEffect(() => {
     if (!isCustomerLoggedIn()) {
@@ -98,7 +182,9 @@ export default function MyEnquiriesPage() {
 
   useEffect(() => {
     if (isCheckingAuth) return;
-    fetchMyBookings().then(setBookings).finally(() => setIsLoading(false));
+    Promise.all([fetchMyBookings(), fetchMyCustomPackageRequests()])
+      .then(([b, r]) => { setBookings(b); setCustomRequests(r); })
+      .finally(() => setIsLoading(false));
   }, [isCheckingAuth]);
 
   if (isCheckingAuth) {
@@ -121,55 +207,107 @@ export default function MyEnquiriesPage() {
       <div className="container page-content">
         {isLoading ? (
           <p style={{ color: 'var(--muted)' }}>Loading your enquiries...</p>
-        ) : bookings.length === 0 ? (
+        ) : bookings.length === 0 && customRequests.length === 0 ? (
           <div style={{ padding: 48, border: '1px solid var(--line)', borderRadius: 4, textAlign: 'center' }}>
             <p style={{ color: 'var(--muted)', marginBottom: 20 }}>You haven&apos;t made any enquiries yet.</p>
-            <Link href="/packages" className="btn btn-primary">Browse trips</Link>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <Link href="/packages" className="btn btn-primary">Browse trips</Link>
+              <Link href="/custom-package" className="btn btn-ghost">Build a trip</Link>
+            </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {bookings.map(b => (
-              <div key={b.id} className="enquiry-row" style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                gap: 24, padding: 24, border: '1px solid var(--line)', borderRadius: 8,
-                flexWrap: 'wrap', background: '#f7f6f4',
-              }}>
-                <div>
-                  <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>
-                    {b.id}
-                  </div>
-                  <h3 style={{ fontSize: 20, marginBottom: 4 }}>{b.pkg}</h3>
-                  <div style={{ color: 'var(--ink-2)', fontSize: 14 }}>
-                    {b.dates} · {b.pax || 1} traveler{(b.pax || 1) === 1 ? '' : 's'}
-                  </div>
-                  <div style={{ marginTop: 12, fontSize: 12, color: 'var(--muted)' }}>
-                    For any queries or changes, contact us on{' '}
-                    <span
-                      style={{ color: 'var(--forest)' }}
-                    >
-                      WhatsApp
-                    </span>{' '}
-                    or <Link href="/contact" style={{ color: 'var(--forest)', textDecoration: 'underline' }}>Contact Us</Link>.
-                  </div>
-                </div>
-                <div className="enquiry-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                  <StatusPill status={b.status} />
-                  <div style={{ fontWeight: 500 }}>₹{b.total.toLocaleString()}</div>
-                  {b.created_at && (
-                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                      Submitted {new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+            {bookings.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: 18, marginBottom: 16 }}>Bookings</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {bookings.map(b => (
+                    <div key={b.id} className="enquiry-row" style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      gap: 24, padding: 24, border: '1px solid var(--line)', borderRadius: 8,
+                      flexWrap: 'wrap', background: '#f7f6f4',
+                    }}>
+                      <div>
+                        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>
+                          {b.id}
+                        </div>
+                        <h3 style={{ fontSize: 20, marginBottom: 4 }}>{b.pkg}</h3>
+                        <div style={{ color: 'var(--ink-2)', fontSize: 14 }}>
+                          {b.dates} · {b.pax || 1} traveler{(b.pax || 1) === 1 ? '' : 's'}
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 12, color: 'var(--muted)' }}>
+                          For any queries or changes, contact us on{' '}
+                          <span
+                            style={{ color: 'var(--forest)' }}
+                          >
+                            WhatsApp
+                          </span>{' '}
+                          or <Link href="/contact" style={{ color: 'var(--forest)', textDecoration: 'underline' }}>Contact Us</Link>.
+                        </div>
+                      </div>
+                      <div className="enquiry-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                        <StatusPill status={b.status} />
+                        <div style={{ fontWeight: 500 }}>₹{b.total.toLocaleString()}</div>
+                        {b.created_at && (
+                          <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                            Submitted {new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        )}
+                        <button className="btn btn-ghost btn-sm" onClick={() => setSelectedBooking(b)}>View details</button>
+                      </div>
                     </div>
-                  )}
-                  <button className="btn btn-ghost btn-sm" onClick={() => setSelectedBooking(b)}>View details</button>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {customRequests.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: 18, marginBottom: 16 }}>Custom trip requests</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {customRequests.map(r => (
+                    <div key={r.id} className="enquiry-row" style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      gap: 24, padding: 24, border: '1px solid var(--line)', borderRadius: 8,
+                      flexWrap: 'wrap', background: '#f7f6f4',
+                    }}>
+                      <div>
+                        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>
+                          Request #{r.id}
+                        </div>
+                        <h3 style={{ fontSize: 20, marginBottom: 4 }}>{(r.destination_names || []).join(', ') || r.region_name || r.region}</h3>
+                        <div style={{ color: 'var(--ink-2)', fontSize: 14 }}>
+                          {formatPax(r)}{r.travel_date ? ` · ${new Date(r.travel_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}{r.estimated_days ? ` · ${r.estimated_days} day${r.estimated_days !== 1 ? 's' : ''}` : ''}
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 12, color: 'var(--muted)' }}>
+                          For any queries or changes, contact us on{' '}
+                          <span style={{ color: 'var(--forest)' }}>WhatsApp</span>{' '}
+                          or <Link href="/contact" style={{ color: 'var(--forest)', textDecoration: 'underline' }}>Contact Us</Link>.
+                        </div>
+                      </div>
+                      <div className="enquiry-meta" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                        <StatusPill status={r.status} colors={REQUEST_STATUS_COLORS} />
+                        {r.created_at && (
+                          <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                            Submitted {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        )}
+                        <button className="btn btn-ghost btn-sm" onClick={() => setSelectedRequest(r)}>View details</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {selectedBooking && (
         <EnquiryDetailsModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
+      )}
+      {selectedRequest && (
+        <CustomRequestDetailsModal request={selectedRequest} onClose={() => setSelectedRequest(null)} />
       )}
     </MainLayout>
   );

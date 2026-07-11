@@ -64,7 +64,7 @@ export default function DestinationsPage() {
             return (
               <Link
                 key={d.name}
-                href={`/packages?region=${encodeURIComponent(d.region)}`}
+                href={`/destinations/${encodeURIComponent(d.name)}`}
                 className="dest-card"
                 style={{
                   backgroundImage: `url(${d.img})`,
@@ -85,11 +85,11 @@ export default function DestinationsPage() {
         {/* ── Regions we cover ── */}
         {regions.length > 0 && (
           <div style={{marginBottom: 56}}>
-            <span className="eyebrow">— Where we operate</span>
+            <span className="eyebrow">— Where we operate</span> <br />
+            <span style={{marginLeft: 8, fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)'}}>
+              {regions.length} region{regions.length !== 1 ? 's' : ''} we cover
+            </span>
             <div className="region-pills-row" style={{marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10}}>
-              <span style={{fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)'}}>
-                {regions.length} region{regions.length !== 1 ? 's' : ''} we cover
-              </span>
               <div className="region-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 {regions.map(r => (
                   <a
@@ -122,7 +122,7 @@ export default function DestinationsPage() {
               {g.destinations.map(d => (
                 <Link
                   key={d.name}
-                  href={`/packages?region=${encodeURIComponent(d.region)}`}
+                  href={`/destinations/${encodeURIComponent(d.name)}`}
                   className="dest-card"
                   style={{ backgroundImage: `url(${d.img})`, height: 260 }}
                 >

@@ -441,6 +441,41 @@ export default function Home() {
         </div>
       </section>
  
+      <section className="section" style={{paddingTop: 0}}>
+        <div className="container">
+          <div className="rgrid" style={{'--gap': '64px'} as React.CSSProperties}>
+            <div>
+              <span className="eyebrow">— Build a Trip</span>
+              <h2 style={{marginTop: 16}}>Design the itinerary <em style={{fontStyle:'italic'}}>only you would book.</em></h2>
+              <p style={{marginTop: 24, fontSize: 16, lineHeight: 1.6, color: 'var(--ink-2)'}}>
+                Pick a region, choose one or more destinations, then hand-select the things to do at every stop — from a heritage fort to a night market. We turn your selections into a tailored quote, whether you're planning for yourself or reselling to clients.
+              </p>
+              <div style={{marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16}}>
+                <div style={{display: 'flex', gap: 12}}>
+                  <Icon name="check" size={16} stroke={2.5} style={{color: 'var(--clay)'}}/>
+                  <span>Mix and match multiple destinations in one trip</span>
+                </div>
+                <div style={{display: 'flex', gap: 12}}>
+                  <Icon name="check" size={16} stroke={2.5} style={{color: 'var(--clay)'}}/>
+                  <span>Curated things-to-do at every stop</span>
+                </div>
+                <div style={{display: 'flex', gap: 12}}>
+                  <Icon name="check" size={16} stroke={2.5} style={{color: 'var(--clay)'}}/>
+                  <span>Reseller margins built in for travel agencies</span>
+                </div>
+              </div>
+              <Link href="/custom-package" className="btn btn-primary" style={{marginTop: 32, display: 'inline-flex', alignItems: 'center', gap: 8}}>
+                Build your trip <Icon name="arrow-right" size={14}/>
+              </Link>
+            </div>
+            <div style={{
+              backgroundImage: 'url(https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&auto=format&fit=crop)',
+              backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 4, minHeight: 420,
+            }}/>
+          </div>
+        </div>
+      </section>
+
       {trendingList.length > 0 && (
         <section className="section trending">
           <div className="container">

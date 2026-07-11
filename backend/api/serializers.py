@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from api.models import (
-    Package, Destination, Region, Offer, Testimonial, Booking, ContactInquiry,
+    Package, Destination, Region, Location, Offer, Testimonial, Booking, ContactInquiry,
     FAQ, Story, NewsletterSubscriber, Customer, JobOpening, PackageReview, Favorite, Flyer,
-    B2BInquiry, SiteEffectSetting
+    B2BInquiry, SiteEffectSetting, CustomPackageRequest
 )
 
 class PackageSerializer(serializers.ModelSerializer):
@@ -31,8 +31,14 @@ class RegionSerializer(serializers.ModelSerializer):
         model = Region
         fields = '__all__'
 
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
+
 class DestinationSerializer(serializers.ModelSerializer):
     count = serializers.ReadOnlyField()
+    locations = LocationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Destination
@@ -68,6 +74,52 @@ class B2BInquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = B2BInquiry
         fields = '__all__'
+
+class CustomPackageRequestSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+    customer_email = serializers.SerializerMethodField()
+    customer_phone = serializers.SerializerMethodField()
+    region_name = serializers.CharField(source='region.name', read_only=True)
+    destination_names = serializers.SerializerMethodField()
+    location_names = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomPackageRequest
+        fields = '__all__'
+        read_only_fields = ['customer', 'created_at']
+
+    def get_customer_name(self, obj):
+        return obj.customer.name if obj.customer_id else None
+
+    def get_customer_email(self, obj):
+        return obj.customer.email if obj.customer_id else None
+
+    def get_customer_phone(self, obj):
+        return obj.customer.phone if obj.customer_id else None
+
+    def get_destination_names(self, obj):
+        return list(obj.destinations.values_list('name', flat=True))
+
+    def get_location_names(self, obj):
+        return list(obj.locations.values_list('name', flat=True))
+
+    def validate(self, attrs):
+        destinations = attrs.get('destinations', getattr(self.instance, 'destinations', None))
+        if destinations is not None and hasattr(destinations, 'all'):
+            destinations = list(destinations.all())
+        if not destinations:
+            raise serializers.ValidationError({'destinations': 'Select at least one destination.'})
+
+        region = attrs.get('region', getattr(self.instance, 'region', None))
+        if region and any(d.region_id != region.name for d in destinations):
+            raise serializers.ValidationError({'destinations': 'All destinations must belong to the selected region.'})
+
+        traveler_type = attrs.get('traveler_type', getattr(self.instance, 'traveler_type', CustomPackageRequest.TRAVELER_SELF))
+        margin = attrs.get('requested_margin_percent', getattr(self.instance, 'requested_margin_percent', None))
+        if traveler_type == CustomPackageRequest.TRAVELER_RESELLER and margin is None:
+            raise serializers.ValidationError({'requested_margin_percent': 'Required for reseller requests.'})
+
+        return attrs
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:

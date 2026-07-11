@@ -1,19 +1,20 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.views import (
-    PackageViewSet, DestinationViewSet, RegionViewSet, OfferViewSet,
+    PackageViewSet, DestinationViewSet, RegionViewSet, LocationViewSet, OfferViewSet,
     TestimonialViewSet, BookingViewSet, ContactInquiryViewSet, StatsView,
     FAQViewSet, StoryViewSet, NewsletterSubscriberViewSet, MeView, SiteStatsView,
     ChangePasswordView, CustomerViewSet, CustomerSignupView, CustomerLoginView,
     CustomerMeView, JobOpeningViewSet, PackageReviewViewSet, FavoriteViewSet,
     CustomerNewsletterView, AnalyticsView, AdminUserViewSet, FlyerViewSet,
-    B2BInquiryViewSet, SiteEffectSettingView
+    B2BInquiryViewSet, SiteEffectSettingView, CustomPackageRequestViewSet
 )
 
 router = DefaultRouter()
 router.register(r'packages', PackageViewSet, basename='package')
 router.register(r'package-reviews', PackageReviewViewSet, basename='package-review')
 router.register(r'destinations', DestinationViewSet, basename='destination')
+router.register(r'locations', LocationViewSet, basename='location')
 router.register(r'regions', RegionViewSet, basename='region')
 router.register(r'offers', OfferViewSet, basename='offer')
 router.register(r'flyers', FlyerViewSet, basename='flyer')
@@ -21,6 +22,7 @@ router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
 router.register(r'bookings', BookingViewSet, basename='booking')
 router.register(r'inquiries', ContactInquiryViewSet, basename='inquiry')
 router.register(r'b2b-inquiries', B2BInquiryViewSet, basename='b2b-inquiry')
+router.register(r'custom-package-requests', CustomPackageRequestViewSet, basename='custom-package-request')
 router.register(r'faqs', FAQViewSet, basename='faq')
 router.register(r'stories', StoryViewSet, basename='story')
 router.register(r'newsletter-subscribers', NewsletterSubscriberViewSet, basename='newsletter-subscriber')
